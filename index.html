@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIIQAT-AI — Dataset Plan</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #5e6a7d;
+      --line: #dfe5ef;
+      --accent: #2563eb;
+      --accent-soft: #eef4ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 20px 64px;
+    }
+    .header {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+    h1 {
+      margin: 8px 0 10px;
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1.1;
+    }
+    .intro {
+      color: var(--muted);
+      max-width: 900px;
+      margin: 0;
+      font-size: 17px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+    }
+    th, td {
+      padding: 14px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      background: var(--accent-soft);
+      font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    pre {
+      margin: 0;
+      padding: 20px;
+      background: #101828;
+      color: #e7edf7;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    .note {
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="header">
+      <div class="eyebrow">MIIQAT-AI</div>
+      <h1>Dataset Plan</h1>
+      <p class="intro">
+        No single public dataset contains Hajj crowds, shuttle telemetry, emergency routes,
+        intervention outcomes and future-risk labels. Public data will train perception;
+        controlled digital-twin data will evaluate prediction and interventions.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Recommended datasets and outputs</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Recommended data</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hajj perception</td>
+            <td><a href="https://github.com/KAU-Smart-Crowd/HAJJv2_dataset" target="_blank" rel="noopener">HAJJv2</a></td>
+            <td>Hajj scenes, abnormal movement and objects</td>
+          </tr>
+          <tr>
+            <td>Hajj counting</td>
+            <td><a href="https://arxiv.org/abs/2607.07322" target="_blank" rel="noopener">HAJJv2-CrowdCount</a></td>
+            <td>Dense-count accuracy and confidence</td>
+          </tr>
+          <tr>
+            <td>Traffic anomalies</td>
+            <td><a href="https://www.aicitychallenge.org/2026-track3/" target="_blank" rel="noopener">AI City Track 3</a></td>
+            <td>Traffic anomalies and explanations</td>
+          </tr>
+          <tr>
+            <td>Pedestrian safety</td>
+            <td><a href="https://www.aicitychallenge.org/2026-track2/" target="_blank" rel="noopener">AI City Track 2</a></td>
+            <td>Pedestrian–vehicle interactions</td>
+          </tr>
+          <tr>
+            <td>Vehicle flow</td>
+            <td><a href="https://arxiv.org/abs/1903.09254" target="_blank" rel="noopener">CityFlow</a></td>
+            <td>Multi-camera vehicle flow</td>
+          </tr>
+          <tr>
+            <td>Dense-crowd robustness</td>
+            <td><a href="https://www.crcv.ucf.edu/data/ucf-qnrf/" target="_blank" rel="noopener">UCF-QNRF</a></td>
+            <td>Extreme-density robustness</td>
+          </tr>
+          <tr>
+            <td>Risk forecasting</td>
+            <td>Custom digital-twin sequences</td>
+            <td>Time-to-risk and propagation</td>
+          </tr>
+          <tr>
+            <td>Intervention testing</td>
+            <td>Custom counterfactual scenarios</td>
+            <td>Before/after total network risk</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Custom scenario schema</h2>
+      <pre>timestamp, zone_id, capacity, crowd_count, inflow, outflow,
+mean_speed, dominant_direction, bus_queue, emergency_route_open,
+camera_confidence, gps_confidence, gate_confidence, heat_index,
+intervention, downstream_risk, total_network_risk</pre>
+    </section>
+
+    <section class="card">
+      <h2>Scenarios</h2>
+      <p class="note">
+        Normal flow, rising inflow, opposing flow, shuttle delay, blocked emergency route,
+        gate opening, pedestrian rerouting, shuttle throttling, camera failure and GPS failure.
+      </p>
+      <p class="note">
+        Synthetic scenarios must be labelled simulated and never presented as recorded Hajj incidents.
+      </p>
+    </section>
+
+    <footer>
+      MIIQAT-AI · Dataset documentation
+    </footer>
+  </main>
+</body>
+</html>
