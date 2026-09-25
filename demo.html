@@ -1,0 +1,1585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MIIQAT AI Prototype</title>
+<meta name="description" content="MIIQAT AI — synthetic demonstration prototype of privacy-preserving predictive crowd–traffic risk management for Hajj and Umrah.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#FAF9F6; --surface:#FFFFFF; --surface-2:#F3F1EC; --line:#E4DFD5; --line-2:#D3CCBF;
+  --ink:#1E1D1A; --ink-2:#5E5A52; --ink-3:#8A857B;
+  --brand:#D9661A; --brand-soft:#FDEEDF; --brand-ink:#9A4210;
+  --low:#1E8F62; --low-soft:#E3F4EC;
+  --med:#B98700; --med-soft:#FBF1D2;
+  --high:#D8541D; --high-soft:#FCE6DA;
+  --crit:#BF2A3B; --crit-soft:#F9DEE1;
+  --ped:#1E1D1A; --bus:#2C6CB0; --car:#8A857B; --route:#1E8F62;
+  --shadow:0 1px 2px rgba(40,30,10,.05),0 6px 18px rgba(40,30,10,.05);
+  --r:14px;
+  --f-display:"Sora","Plus Jakarta Sans",system-ui,sans-serif;
+  --f-body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141311; --surface:#1D1C19; --surface-2:#26241F; --line:#36332C; --line-2:#48443B;
+    --ink:#F2EFE8; --ink-2:#BDB6A8; --ink-3:#8F897D;
+    --brand:#F08A3E; --brand-soft:#3A2618; --brand-ink:#F6B07A;
+    --low:#3CC08A; --low-soft:#16312523; --med:#E2B532; --med-soft:#3A301226; --high:#F2804A; --high-soft:#3E231526; --crit:#F0697A; --crit-soft:#42182026;
+    --ped:#F2EFE8; --bus:#6FA8E6; --car:#8F897D; --route:#3CC08A;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141311; --surface:#1D1C19; --surface-2:#26241F; --line:#36332C; --line-2:#48443B;
+  --ink:#F2EFE8; --ink-2:#BDB6A8; --ink-3:#8F897D;
+  --brand:#F08A3E; --brand-soft:#3A2618; --brand-ink:#F6B07A;
+  --low:#3CC08A; --low-soft:#16312523; --med:#E2B532; --med-soft:#3A301226; --high:#F2804A; --high-soft:#3E231526; --crit:#F0697A; --crit-soft:#42182026;
+  --ped:#F2EFE8; --bus:#6FA8E6; --car:#8F897D; --route:#3CC08A;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;padding-inline:clamp(16px,4vw,48px);padding-block:0 80px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.2}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,[contenteditable]:focus-visible,.zone-hit:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+.eyebrow{font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+/* ---------- header ---------- */
+.top{border-top:5px solid var(--brand);margin-inline:calc(-1 * clamp(16px,4vw,48px));padding-inline:clamp(16px,4vw,48px)}
+.head{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:center;justify-content:space-between;padding-block:28px 22px}
+.brand h1{font-size:clamp(28px,4vw,38px);letter-spacing:.01em}
+.brand p{color:var(--ink-2);font-size:16px;margin-top:4px}
+.head-right{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.status{display:flex;flex-direction:column;gap:2px;font-size:14px;padding:10px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.status b{display:flex;gap:8px;align-items:center;font-size:13px;letter-spacing:.06em}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--low);display:inline-block;flex:none}
+.dot.warn{background:var(--med)}
+@media (prefers-reduced-motion:no-preference){.dot.pulse{animation:pulse 2s infinite}}
+@keyframes pulse{50%{opacity:.35}}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:12px 22px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--surface);font-weight:600;font-size:16px;transition:background .15s,border-color .15s,transform .05s}
+.btn:hover{border-color:var(--ink-3);background:var(--surface-2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.primary:hover{opacity:.9}
+.btn.brand{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.good{background:var(--low);border-color:var(--low);color:#fff}
+.btn.bad{border-color:var(--crit);color:var(--crit)}
+.btn.big{min-height:64px;font-size:18px;padding:14px 28px}
+.btn.small{min-height:42px;padding:8px 14px;font-size:14px}
+.btn[aria-pressed="true"]{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px}
+
+/* ---------- nav ---------- */
+nav.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding-block:6px 20px}
+nav.pages button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);min-height:66px}
+nav.pages button span{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+nav.pages button b{font-size:15px;font-weight:600;line-height:1.25}
+nav.pages button:hover{border-color:var(--ink-3)}
+nav.pages button[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+nav.pages button[aria-current="page"] span{color:var(--bg);opacity:.7}
+
+/* ---------- sim bar ---------- */
+.simbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:12px;border-bottom:1px solid var(--line);margin-bottom:36px}
+.simbar .wrap{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between}
+.sim-info{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.stepbox{font-family:var(--f-mono);font-size:22px;font-weight:700}
+.stepbox small{font-size:14px;color:var(--ink-3);font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-weight:700;font-size:14px;letter-spacing:.04em;background:var(--lvs);color:var(--lv);border:1.5px solid var(--lv)}
+.lvl-LOW{--lv:var(--low);--lvs:var(--low-soft)}
+.lvl-MEDIUM{--lv:var(--med);--lvs:var(--med-soft)}
+.lvl-HIGH{--lv:var(--high);--lvs:var(--high-soft)}
+.lvl-CRITICAL{--lv:var(--crit);--lvs:var(--crit-soft)}
+.sim-ctrl{display:flex;flex-wrap:wrap;gap:8px}
+.sim-ctrl .btn{min-height:46px;padding:8px 16px;font-size:15px}
+
+.demo-banner{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:18px 22px;display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;margin-bottom:32px}
+.demo-banner p{font-size:18px;font-weight:600;max-width:70ch}
+.demo-banner .btn{background:transparent;color:var(--bg);border-color:rgba(255,255,255,.35)}
+:root[data-theme="dark"] .demo-banner .btn{border-color:rgba(0,0,0,.35)}
+
+/* ---------- pages ---------- */
+.page{display:flex;flex-direction:column;gap:40px}
+.page-head{display:flex;flex-direction:column;gap:10px;max-width:760px}
+.page-head h2{font-size:clamp(28px,3.6vw,40px)}
+.page-head p{font-size:18px;color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:clamp(22px,3vw,36px);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:18px;min-width:0}
+.card h3{font-size:22px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:28px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:20px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:24px 26px;display:flex;flex-direction:column;gap:6px}
+.tile .v{font-family:var(--f-mono);font-size:34px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile .v small{font-size:16px;color:var(--ink-3);font-weight:500}
+.tile .sub{font-size:14px;color:var(--ink-2)}
+.next{display:flex;justify-content:flex-end;padding-top:8px}
+.note{border-left:4px solid var(--brand);background:var(--brand-soft);padding:16px 20px;border-radius:0 12px 12px 0;font-size:16px}
+.note b{color:var(--brand-ink)}
+
+/* risk hero */
+.risk-num{font-family:var(--f-mono);font-size:clamp(64px,9vw,96px);font-weight:700;line-height:1;color:var(--lv);font-variant-numeric:tabular-nums}
+.gauge{position:relative;height:18px;border-radius:9px;background:linear-gradient(90deg,var(--low) 0 var(--m),var(--med) var(--m) var(--h),var(--high) var(--h) var(--c),var(--crit) var(--c) 100%);opacity:.9}
+.gauge .needle{position:absolute;top:-8px;width:6px;height:34px;border-radius:3px;background:var(--ink);transform:translateX(-50%);transition:left .4s}
+.gauge-scale{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);position:relative;height:16px}
+.gauge-scale span{position:absolute;transform:translateX(-50%)}
+
+/* bars */
+.bars{display:flex;flex-direction:column;gap:18px}
+.bar-row{display:grid;grid-template-columns:minmax(120px,210px) 1fr 110px;gap:16px;align-items:center}
+.bar-row .lab{font-weight:600}
+.bar-row .lab small{display:block;font-weight:400;color:var(--ink-2);font-size:13px}
+.track{height:16px;border-radius:8px;background:var(--surface-2);overflow:hidden}
+.fill{height:100%;border-radius:8px;background:var(--lv,var(--brand));transition:width .35s}
+.bar-row .tag{font-family:var(--f-mono);font-size:13px;font-weight:700;text-align:right;color:var(--lv)}
+@media (max-width:560px){.bar-row{grid-template-columns:1fr 70px}.bar-row .track{grid-column:1/-1;grid-row:2}}
+
+/* tables */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr.pick td{background:var(--brand-soft)}
+
+/* variable groups */
+.vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:24px}
+.vars dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:8px 16px}
+.vars dt{font-family:var(--f-mono);font-size:14px;color:var(--ink-2)}
+.vars dd{margin:0;font-family:var(--f-mono);font-weight:700;text-align:right}
+
+/* alerts */
+.alerts{display:flex;flex-direction:column;gap:12px;max-height:440px;overflow:auto}
+.alert{display:grid;grid-template-columns:110px 160px 1fr;gap:14px;align-items:baseline;padding:14px 16px;border-radius:12px;background:var(--surface-2)}
+.alert .time{font-family:var(--f-mono);font-size:13px;color:var(--ink-3)}
+.alert .kind{font-weight:700;font-size:13px;letter-spacing:.06em;color:var(--lv,var(--ink-2))}
+@media (max-width:640px){.alert{grid-template-columns:1fr}}
+
+/* chart */
+.chart svg{width:100%;height:auto;display:block}
+.chart-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:14px;color:var(--ink-2)}
+.chart-legend i{display:inline-block;width:22px;height:4px;border-radius:2px;vertical-align:middle;margin-right:8px;background:var(--ink)}
+
+/* scenarios */
+.scen{display:flex;flex-direction:column;gap:16px}
+.scen h3{font-size:22px}
+.chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;font-weight:600}
+.chain span{padding:6px 12px;border-radius:999px;background:var(--surface-2)}
+.chain em{font-style:normal;color:var(--ink-3)}
+.scen.active{border-color:var(--brand);box-shadow:0 0 0 2px var(--brand)}
+
+/* what-if */
+.iv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px}
+.iv{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:18px 20px;border-radius:14px;border:1.5px solid var(--line-2);background:var(--surface);min-height:110px}
+.iv b{font-size:17px}
+.iv small{color:var(--ink-2);font-size:13px;line-height:1.4}
+.iv[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-soft)}
+.iv.on{border-style:dashed}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:stretch}
+.ba .side{border-radius:14px;padding:26px;background:var(--surface-2);display:flex;flex-direction:column;gap:14px}
+.ba .mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;font-weight:700;max-width:180px}
+.ba .arrow{font-size:40px;line-height:1;color:var(--brand)}
+.ba dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:10px 14px}
+.ba dt{color:var(--ink-2)}
+.ba dd{margin:0;font-family:var(--f-mono);font-weight:700;text-align:right}
+@media (max-width:760px){.ba{grid-template-columns:1fr}.ba .mid{max-width:none;flex-direction:row}.ba .arrow{transform:rotate(90deg)}}
+.reduction{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:baseline;padding:22px 26px;border-radius:14px;border:2px solid var(--lv);background:var(--lvs)}
+.reduction .big{font-family:var(--f-mono);font-size:48px;font-weight:700;color:var(--lv)}
+.rank{display:flex;flex-direction:column;gap:14px}
+.rank-row{display:grid;grid-template-columns:36px minmax(140px,240px) 1fr 80px;gap:14px;align-items:center}
+.rank-row .n{font-family:var(--f-mono);color:var(--ink-3)}
+@media (max-width:560px){.rank-row{grid-template-columns:28px 1fr 64px}.rank-row .track{grid-column:2/-1;grid-row:2}}
+.approved{display:flex;gap:14px;align-items:center;padding:18px 22px;border-radius:12px;background:var(--low-soft);border:1.5px solid var(--low);font-weight:600}
+.approved .tick{font-size:26px;color:var(--low)}
+.rec{border:2px solid var(--brand)}
+
+/* map */
+.map-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:var(--surface)}
+.map-wrap svg{display:block;width:100%;min-width:680px;height:auto}
+.zone-hit{cursor:pointer}
+.zone-hit:hover rect.zbox{stroke-width:3}
+.legend{display:flex;flex-wrap:wrap;gap:12px 26px;font-size:14px;color:var(--ink-2)}
+.legend span{display:inline-flex;gap:8px;align-items:center}
+.sw{width:14px;height:14px;border-radius:50%;display:inline-block}
+
+/* sensors */
+.sensor{display:flex;flex-direction:column;gap:10px}
+.sensor .state{display:flex;gap:8px;align-items:center;font-weight:700;font-size:14px;letter-spacing:.05em}
+.checks{display:flex;flex-direction:column;gap:10px;list-style:none;margin:0;padding:0}
+.checks li{display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-radius:10px;background:var(--surface-2)}
+.checks .ok{color:var(--low);font-weight:700}
+.checks .no{color:var(--crit);font-weight:700}
+pre.payload{margin:0;background:var(--surface-2);border-radius:12px;padding:18px;overflow:auto;font-family:var(--f-mono);font-size:13px;line-height:1.5;max-height:340px}
+
+/* pipeline */
+.pipe{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;counter-reset:p}
+.pipe li{display:grid;grid-template-columns:56px 1fr;gap:18px;padding:16px 0;border-bottom:1px dashed var(--line)}
+.pipe li::before{counter-increment:p;content:counter(p,decimal-leading-zero);font-family:var(--f-mono);font-weight:700;color:var(--brand);font-size:18px}
+.pipe b{display:block}
+.compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px}
+.compare ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:17px}
+
+/* forms */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px 22px}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:15px}
+label.f small{font-weight:400;color:var(--ink-2)}
+input[type=number],input[type=text],select{font:inherit;font-size:17px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);color:var(--ink);width:100%}
+
+/* hero */
+.hero{padding-block:clamp(20px,5vw,56px);display:flex;flex-direction:column;gap:26px;max-width:880px}
+.hero h2{font-size:clamp(34px,5.4vw,60px);letter-spacing:-.01em}
+.hero .tagline{font-size:clamp(19px,2.2vw,24px);color:var(--ink-2);max-width:40ch}
+.tags{display:flex;flex-wrap:wrap;gap:10px}
+.tags span{padding:8px 16px;border-radius:999px;border:1.5px solid var(--line-2);font-weight:600;font-size:15px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:14px 22px;border-radius:12px;font-weight:600;z-index:50;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+
+/* edit mode */
+body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;border-radius:4px;cursor:text}
+.edit-hint{background:var(--brand);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:15px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* phones (QR-code visitors) */
+@media (max-width:640px){
+  body{font-size:16px}
+  .head{padding-block:20px 14px}
+  nav.pages{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-block:4px 14px}
+  nav.pages button{min-height:54px;padding:8px 10px}
+  nav.pages button b{font-size:13px}
+  .simbar{position:static;padding-block:8px;margin-bottom:24px}
+  .sim-info{gap:6px 16px}
+  .stepbox{font-size:18px}
+  .sim-ctrl{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .sim-ctrl .btn{min-height:42px;padding:6px 4px;font-size:13px}
+  .card{padding:20px}
+  .page{gap:28px}
+  .risk-num{font-size:60px}
+  .btn.big{min-height:56px;font-size:16px;padding:12px 18px}
+  .status{font-size:12px;padding:6px 10px}
+  .head-right{width:100%}
+}
+</style>
+</head>
+<body>
+
+
+<div class="top">
+  <div class="wrap head">
+    <div class="brand">
+      <h1 data-edit="title">MIIQAT AI</h1>
+      <p data-edit="subtitle">Predictive Crowd–Traffic Risk Management for Hajj and Umrah</p>
+    </div>
+    <div class="head-right">
+      <div class="status">
+        <b><span class="dot pulse" id="statusDot"></span><span id="statusText">SIMULATION ONLINE</span></b>
+        <span class="muted">Synthetic data · Demonstration only</span>
+      </div>
+      <button class="btn" id="editBtn" aria-pressed="false">✎ Edit text</button>
+      <button class="btn brand" id="demoBtn">▶ Demo mode</button>
+    </div>
+  </div>
+  <div class="wrap"><div class="edit-hint" id="editHint" hidden>Edit mode is on. Click any outlined text to change it. Your edits stay in this browser. Press “Done editing” when finished.</div></div>
+  <nav class="wrap pages" id="nav" aria-label="Pages"></nav>
+</div>
+
+<div class="simbar">
+  <div class="wrap">
+    <div class="sim-info">
+      <div class="stepbox"><small>STEP </small><span id="sbStep">0</span><small> / <span id="sbMax">60</span></small></div>
+      <div><div class="eyebrow">Scenario</div><b id="sbScen"></b></div>
+      <div><div class="eyebrow">Network risk</div><span class="pill" id="sbRisk"></span></div>
+    </div>
+    <div class="sim-ctrl">
+      <button class="btn primary" id="playBtn">▶ Play</button>
+      <button class="btn" id="stepBtn">Step forward</button>
+      <button class="btn" id="runBtn">Run 60 steps</button>
+      <button class="btn" id="resetBtn">↻ Reset</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <p class="note" id="bootMsg"><b>Loading the simulation…</b> If the buttons don’t respond, this app or file preview is not running JavaScript. Open the link in Chrome, Safari or Edge instead.</p>
+  <div class="demo-banner" id="demoBanner" hidden>
+    <p id="demoText"></p>
+    <div class="btn-row"><button class="btn small" id="demoPause">⏸ Pause demo</button><button class="btn small" id="demoStop">Stop demo</button></div>
+  </div>
+
+  <!-- 1 START -->
+  <section class="page" id="p-start">
+    <div class="hero">
+      <div class="eyebrow" data-edit="start.eyebrow">Research &amp; demonstration prototype</div>
+      <h2 data-edit="start.h">Predicting dangerous crowd–traffic interactions before they become operationally critical.</h2>
+      <p class="tagline" data-edit="start.tag">MIIQAT AI reads anonymous movement signals from pilgrims, shuttles, gates and weather, forecasts network risk a short horizon ahead, and tests interventions on a digital twin before a human approves them.</p>
+      <div class="tags"><span>Privacy-preserving</span><span>Network-aware</span><span>Predictive</span><span>Human-in-the-loop</span></div>
+      <div class="btn-row"><button class="btn primary big" data-go="live">Enter simulation →</button><button class="btn big" data-demo>▶ Watch the guided demo</button></div>
+    </div>
+    <div class="compare">
+      <div class="card">
+        <div class="eyebrow">Traditional monitoring</div>
+        <h3 data-edit="start.trad">Answers one question</h3>
+        <ul><li>What is happening now?</li></ul>
+      </div>
+      <div class="card" style="border-color:var(--brand)">
+        <div class="eyebrow" style="color:var(--brand-ink)">MIIQAT AI</div>
+        <h3 data-edit="start.miqaat">Answers four</h3>
+        <ul><li>What is happening now?</li><li>What may happen next?</li><li>How are crowd and transport systems interacting?</li><li>What happens if we intervene?</li></ul>
+      </div>
+    </div>
+    <p class="note" data-edit="start.note"><b>Demonstration only.</b> Every number here comes from a seeded synthetic simulation of three zones. The risk score is an interpretable weighted formula, not a trained or validated model, and no simulated event represents a real Hajj incident.</p>
+    <div class="next"><button class="btn primary big" data-go="live">Next: Live monitor →</button></div>
+  </section>
+
+  <!-- 2 LIVE -->
+  <section class="page" id="p-live" hidden>
+    <div class="page-head"><h2 data-edit="live.h">Live monitor</h2><p data-edit="live.p">What is happening now, and what is likely next. Press Play, or step one interval at a time.</p></div>
+    <div id="recSlotLive"></div>
+    <div class="grid2">
+      <div class="card" id="riskCard"></div>
+      <div class="card" id="forecastCard"></div>
+    </div>
+    <div class="tiles" id="kpis"></div>
+    <div class="card" id="labelCard"></div>
+    <div class="card">
+      <h3>Risk score over time</h3>
+      <div class="chart" id="liveChart"></div>
+    </div>
+    <div class="card">
+      <h3>Alert feed</h3>
+      <div class="alerts" id="alerts"></div>
+    </div>
+    <div class="next"><button class="btn primary big" data-go="map">Next: Zone map →</button></div>
+  </section>
+
+  <!-- 3 MAP -->
+  <section class="page" id="p-map" hidden>
+    <div class="page-head"><h2 data-edit="map.h">Zone map · digital twin</h2><p data-edit="map.p">A stylized three-zone network. Dots are anonymous aggregate flow, not tracked people. Tap a zone to see its numbers.</p></div>
+    <div class="btn-row" id="zoneBtns"></div>
+    <div class="map-wrap"><svg id="twin" viewBox="0 0 1000 470" role="img" aria-label="Digital twin of three connected zones"></svg></div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--ped)"></i>Pedestrian flow</span>
+      <span><i class="sw" style="background:var(--bus);border-radius:3px"></i>Shuttle / bus</span>
+      <span><i class="sw" style="background:var(--car)"></i>General vehicles</span>
+      <span><i class="sw" style="background:var(--route)"></i>Emergency route open</span>
+      <span><i class="sw" style="background:var(--crit)"></i>Blocked</span>
+    </div>
+    <div class="card" id="zoneDetail"></div>
+    <div class="next"><button class="btn primary big" data-go="why">Next: Why this risk? →</button></div>
+  </section>
+
+  <!-- 4 WHY -->
+  <section class="page" id="p-why" hidden>
+    <div class="page-head"><h2 id="whyTitle">Why is risk what it is?</h2><p data-edit="why.p">Each bar is one input to the interpretable prototype risk engine, weighted and added up. Nothing here is hidden.</p></div>
+    <div class="card" id="whyCard"></div>
+    <div class="card" id="whyTop"></div>
+    <div class="card"><h3>All state variables at this step</h3><div class="vars" id="vars"></div></div>
+    <div class="next"><button class="btn primary big" data-go="scenarios">Next: Scenarios →</button></div>
+  </section>
+
+  <!-- 5 SCENARIOS -->
+  <section class="page" id="p-scenarios" hidden>
+    <div class="page-head"><h2 data-edit="scen.h">Scenarios</h2><p data-edit="scen.p">Pick a starting situation. Loading one resets the simulation to step 0 with the same seed, so every run is reproducible.</p></div>
+    <div class="grid3" id="scenGrid"></div>
+    <div class="next"><button class="btn primary big" data-go="whatif">Next: What-if simulation →</button></div>
+  </section>
+
+  <!-- 6 WHAT-IF -->
+  <section class="page" id="p-whatif" hidden>
+    <div class="page-head"><h2 data-edit="wi.h">What-if simulation</h2><p data-edit="wi.p">Choose an intervention. It runs on a cloned twin of the live network, never on the live state, and is compared against doing nothing over the same short horizon.</p></div>
+    <div class="tiles" id="wiNow"></div>
+    <div class="card"><h3>1 · Choose an intervention to test</h3><div class="iv-grid" id="ivGrid"></div></div>
+    <div class="card" id="baCard"></div>
+    <div class="card"><h3>3 · Simulation comparison</h3><p class="muted small" data-edit="wi.rankp">All interventions tested on separate twins and ranked by projected network risk. This is a comparison inside a synthetic simulation, not a guarantee that one action is safest.</p><div class="rank" id="rank"></div></div>
+    <div id="recSlotWhatif"></div>
+    <div class="card" id="activeCard"></div>
+    <div class="next"><button class="btn primary big" data-go="results">Next: 60-step results →</button></div>
+  </section>
+
+  <!-- 7 RESULTS -->
+  <section class="page" id="p-results" hidden>
+    <div class="page-head"><h2 id="resTitle">60-step results</h2><p data-edit="res.p">The live run compared with a counterfactual twin: same seed, same scenario, no interventions.</p></div>
+    <div id="resBody" class="page" style="gap:32px"></div>
+    <div class="next"><button class="btn primary big" data-go="labels">Next: Labels &amp; horizon →</button></div>
+  </section>
+
+  <!-- 8 LABELS -->
+  <section class="page" id="p-labels" hidden>
+    <div class="page-head"><h2 data-edit="lab.h">Labels &amp; forecast horizon</h2><p data-edit="lab.p">A forecasting model can only learn what danger looks like if someone tells it, case by case: “this situation was dangerous.” This page collects those labels and uses them to choose the forecast horizon by experiment instead of by assumption.</p></div>
+    <div class="card" id="labCard"></div>
+    <div class="card" id="horCard"></div>
+    <div class="next"><button class="btn primary big" data-go="privacy">Next: Privacy &amp; sensors →</button></div>
+  </section>
+
+  <!-- 9 PRIVACY -->
+  <section class="page" id="p-privacy" hidden>
+    <div class="page-head"><h2 data-edit="priv.h">Privacy &amp; sensor health</h2><p data-edit="priv.p">Only aggregate movement signals pass the privacy gate into the network-level risk engine. Sensors can fail; the system keeps running on what remains and says so.</p></div>
+    <div class="tiles" id="modeTiles"></div>
+    <div class="card"><h3>Sensors</h3><div class="grid3" id="sensors"></div>
+      <div class="btn-row"><button class="btn bad" data-fail="camera">Camera failure</button><button class="btn bad" data-fail="gps">GPS failure</button><button class="btn bad" data-fail="gate">Gate sensor failure</button><button class="btn" id="restoreBtn">Restore all sensors</button></div>
+    </div>
+    <div class="card" id="auditCard"></div>
+    <div class="card"><h3>What leaves the privacy gate at this step</h3><pre class="payload" id="payload"></pre></div>
+    <div class="next"><button class="btn primary big" data-go="how">Next: How it works →</button></div>
+  </section>
+
+  <!-- 10 HOW -->
+  <section class="page" id="p-how" hidden>
+    <div class="page-head"><h2 data-edit="how.h">How it works</h2><p data-edit="how.p">The same pipeline as the MIIQAT-AI repository and poster, running end to end in this page.</p></div>
+    <div class="card"><h3>Pipeline</h3>
+      <ol class="pipe">
+        <li><div><b>Inputs</b><span class="muted">Cameras, shuttle GPS, gate counters, weather (synthetic here).</span></div></li>
+        <li><div><b>Privacy gate</b><span class="muted">Faces, plates and individual tracks are discarded at the edge.</span></div></li>
+        <li><div><b>Anonymous perception</b><span class="muted">Counts, density, speed, direction, inflow and outflow per zone.</span></div></li>
+        <li><div><b>Crowd, traffic and transport state</b><span class="muted">One state per zone plus shuttles, vehicles, gates, emergency route, heat.</span></div></li>
+        <li><div><b>Network-level risk</b><span class="muted">Zones are nodes; corridors, roads and shuttle routes are edges. A full interchange backs up the corridor.</span></div></li>
+        <li><div><b>Short-horizon forecast</b><span class="muted">The twin is cloned and run forward h steps. h is set by the horizon test.</span></div></li>
+        <li><div><b>What-if simulation</b><span class="muted">Each intervention runs on its own clone.</span></div></li>
+        <li><div><b>Compare outcomes</b><span class="muted">Projected network risk with and without each intervention.</span></div></li>
+        <li><div><b>Explain</b><span class="muted">Contribution of every input to the score.</span></div></li>
+        <li><div><b>Human approval</b><span class="muted">Nothing changes until an operator approves.</span></div></li>
+        <li><div><b>Monitor and label</b><span class="muted">Watch the response; label whether the situation was dangerous; feed labels back into training.</span></div></li>
+      </ol>
+    </div>
+    <div class="card"><h3>The risk formula</h3><div id="formula"></div></div>
+    <div class="card"><h3>Wording we use, and why</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Instead of</th><th>We say</th><th>Because</th></tr></thead>
+        <tbody>
+          <tr><td>“5–10 minute prediction”</td><td>Short-horizon forecast</td><td>The horizon is measured by experiment on labelled data (Labels page), not assumed.</td></tr>
+          <tr><td>“Potential crush risk”</td><td>Elevated crowd-safety risk · Hazardous crowd state</td><td>Describes the state the system can measure, without predicting a specific disaster.</td></tr>
+          <tr><td>“Identity leakage detected?”</td><td>Privacy compliance audit</td><td>An audit that checks the output against an allow-list, and can be shown to fail.</td></tr>
+          <tr><td>“Open gate / clear lane”</td><td>Recommended intervention, followed by human approval</td><td>The system suggests; a person decides.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card"><h3>Limitations</h3>
+      <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
+        <li>All data is synthetic. Numbers are illustrative and not calibrated to any real site.</li>
+        <li>The risk engine is a transparent weighted formula; it can later be replaced by a trained temporal model.</li>
+        <li>The “dangerous” label used in the horizon test is a synthetic rule (density and speed). Real labels must come from operators and incident reviews.</li>
+        <li>Forecasts and what-if results come from the same simulator; a real deployment needs site calibration and independent validation.</li>
+      </ul>
+    </div>
+    <div class="next"><button class="btn primary big" data-go="settings">Next: Settings →</button></div>
+  </section>
+
+  <!-- 11 SETTINGS -->
+  <section class="page" id="p-settings" hidden>
+    <div class="page-head"><h2 data-edit="set.h">Settings</h2><p data-edit="set.p">Every number the engine uses. Change anything, then save to restart the simulation with it. Changes stay in this browser.</p></div>
+    <form id="setForm" class="page" style="gap:28px"></form>
+    <div class="card"><h3>Text on screen</h3><p class="muted">Use “✎ Edit text” at the top to rewrite headings and descriptions directly on the page.</p><div class="btn-row"><button class="btn" id="editBtn2">✎ Edit text</button><button class="btn bad" id="resetText">Reset edited text</button></div></div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+window.addEventListener('error', function (e) {
+  var m = document.getElementById('bootMsg');
+  if (m) { m.hidden = false; m.innerHTML = '<b>The simulation could not start in this browser.</b> Please reload the page, or open it in Chrome, Safari or Edge. (' + String(e.message || 'script error').replace(/</g, '&lt;') + ')'; }
+});
+</script>
+<script>
+(function () {
+if (window.__miqaatTeardown) { try { window.__miqaatTeardown(); } catch (e) { } }
+/* ================================================================
+   MIIQAT AI — SIMULATION + RISK ENGINE (synthetic, deterministic)
+   Everything the interface shows is computed here.
+   Edit DEFAULTS to change capacities, thresholds, weights, horizon.
+   ================================================================ */
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ss = (a, b, t) => { const x = clamp((t - a) / (b - a)); return x * x * (3 - 2 * x); };
+const deep = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- 1. CONFIGURATION (one place) ---------- */
+const DEFAULTS = {
+  seed: 2026,
+  steps: 60,
+  stepMinutes: 1,            // one simulation step = this many simulated minutes
+  playSpeedMs: 650,          // delay between steps when playing
+  scenario: 'rising',
+  horizon: 5,                // short-horizon forecast, in steps (provisional: see Horizon test)
+  thresholds: { medium: 0.40, high: 0.70, critical: 0.85 },
+  weights: { density: 0.28, flow: 0.12, movement: 0.10, shuttle: 0.12, conflict: 0.16, emergency: 0.14, heat: 0.05, uncertainty: 0.03 },
+  zones: {
+    A: { name: 'Pilgrim Corridor', capacity: 3000 },
+    B: { name: 'Shuttle Interchange', capacity: 1500 },
+    C: { name: 'Emergency Access', capacity: 800 }
+  },
+  shuttleCapacity: 50,
+  // Synthetic "this situation was dangerous" label, used for the horizon test.
+  // It is defined independently of the risk score.
+  hazardRule: { density: 0.95, speed: 0.45 },
+  alarmThreshold: 0.60       // forecast risk at or above this counts as a warning in the horizon test
+};
+let CFG = deep(DEFAULTS);
+
+const LEVELS = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+const LEVEL_TEXT = {
+  LOW: 'Normal operating state',
+  MEDIUM: 'Watch closely',
+  HIGH: 'Elevated crowd-safety risk',
+  CRITICAL: 'Hazardous crowd state'
+};
+function levelOf(r) {
+  const th = CFG.thresholds;
+  if (r >= th.critical) return 'CRITICAL';
+  if (r >= th.high) return 'HIGH';
+  if (r >= th.medium) return 'MEDIUM';
+  return 'LOW';
+}
+
+/* ---------- 2. SEEDED RANDOM (mulberry32, state kept inside the sim state) ---------- */
+function rand(s) {
+  s.rng = (s.rng + 0x6D2B79F5) | 0;
+  let t = s.rng;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const noise = s => rand(s) * 2 - 1;
+
+/* ---------- 3. SCENARIOS ---------- */
+// j = small seeded timing jitter so repeated runs differ slightly
+const SCENARIOS = {
+  normal: {
+    name: 'Normal flow',
+    blurb: 'Steady pilgrim arrivals, shuttles on schedule, emergency route clear.',
+    chain: ['Inflow steady', 'Outflow keeps pace', 'Density stable', 'Risk stays LOW'],
+    init: { A: 1450, B: 300, C: 100 },
+    inflowA: () => 100, shuttles: () => 4, delay: () => 2, vehicles: () => 55,
+    blocked: () => false, opposing: () => false, temp: t => 33 + 2 * ss(0, 60, t)
+  },
+  rising: {
+    name: 'Rising inflow',
+    blurb: 'Pilgrim arrivals climb steadily toward the corridor.',
+    chain: ['Inflow ↑', 'Crowd count ↑', 'Density ↑', 'Mean speed ↓', 'Risk ↑'],
+    blurbExtra: 'The arrival wave eases after t≈45, but a corridor that has already jammed clears slowly.',
+    init: { A: 1500, B: 320, C: 110 },
+    inflowA: (t, j) => 100 + 70 * ss(4 + j, 26 + j, t) - 45 * ss(40 + j, 54 + j, t),
+    shuttles: (t, j) => 4 + 1.6 * ss(14 + j, 36 + j, t),
+    delay: (t, j) => 2 + 3 * ss(18 + j, 40 + j, t),
+    vehicles: (t, j) => 55 + 55 * ss(12 + j, 38 + j, t),
+    blocked: () => false, opposing: () => false, temp: t => 35 + 3 * ss(0, 60, t)
+  },
+  blocked: {
+    name: 'Blocked emergency route',
+    blurb: 'An obstruction closes the emergency lane partway through the run.',
+    chain: ['Emergency lane obstructed', 'Spill-over cannot clear', 'Emergency-access risk ↑', 'Network risk ↑'],
+    init: { A: 1700, B: 420, C: 200 },
+    inflowA: () => 110, shuttles: () => 4.2, delay: () => 2.5, vehicles: () => 70,
+    blocked: (t, j) => t >= 14 + j, opposing: () => false, temp: () => 36
+  },
+  shuttle: {
+    name: 'Shuttle delay',
+    blurb: 'Shuttle turnaround slows, buses stack up and waiting crowds build.',
+    chain: ['Shuttle delay ↑', 'Bus queue ↑', 'Waiting crowd at interchange ↑', 'Crowd–traffic interaction ↑', 'Risk ↑'],
+    init: { A: 1650, B: 450, C: 120 },
+    inflowA: () => 104, shuttles: () => 5.4, delay: (t, j) => 2 + 11 * ss(10 + j, 20 + j, t), vehicles: () => 70,
+    blocked: () => false, opposing: () => false, temp: () => 36
+  },
+  opposing: {
+    name: 'Opposing pedestrian flow',
+    blurb: 'A counter-flow enters the corridor and slows everyone down.',
+    chain: ['Counter-flow enters corridor', 'Mean speed ↓', 'Outflow ↓', 'Density ↑', 'Risk ↑'],
+    init: { A: 1750, B: 350, C: 110 },
+    inflowA: () => 112, shuttles: () => 4, delay: () => 2.5, vehicles: () => 60,
+    blocked: () => false, opposing: (t, j) => t >= 10 + j, temp: () => 36
+  },
+  traffic: {
+    name: 'Traffic congestion',
+    blurb: 'Vehicle volume rises around the interchange and slows shuttle service.',
+    chain: ['Vehicle flow ↑', 'Pedestrian–vehicle interaction ↑', 'Shuttle service slows', 'Bus queue ↑', 'Risk ↑'],
+    init: { A: 1650, B: 400, C: 110 },
+    inflowA: () => 104, shuttles: () => 4.3, delay: () => 3, vehicles: (t, j) => 60 + 120 * ss(8 + j, 26 + j, t),
+    blocked: () => false, opposing: () => false, temp: () => 37
+  }
+};
+
+/* ---------- 4. INTERVENTIONS ---------- */
+const INTERVENTIONS = {
+  reroute:   { name: 'Pedestrian rerouting', short: 'Reroute pedestrians', effect: 'Sends 30% of Zone A arrivals along the alternate walkway into Zone B.' },
+  throttle:  { name: 'Shuttle throttling', short: 'Slow shuttle arrivals', effect: 'Cuts incoming shuttles by 40%, so fewer buses queue and fewer passengers are dropped into the interchange.' },
+  gate:      { name: 'Open alternate gate', short: 'Open alternate gate', effect: 'Adds 25% effective capacity and 35% more exit throughput to Zone A.' },
+  emergency: { name: 'Activate emergency route', short: 'Activate emergency route', effect: 'Clears and opens the emergency lane so Zone C can drain.' },
+  diversion: { name: 'Traffic diversion', short: 'Divert traffic', effect: 'Diverts 45% of general vehicles away from the interchange.' }
+};
+const NO_INTERVENTIONS = () => ({ reroute: false, throttle: false, gate: false, emergency: false, diversion: false });
+
+/* ---------- 5. STATE ---------- */
+function speedFrom(d) { return clamp(1.3 * (1 - 0.72 * Math.min(d, 1.25) ** 2), 0.12, 1.35); }
+
+function newState(key = CFG.scenario, seed = CFG.seed) {
+  const sc = SCENARIOS[key];
+  const s = {
+    scenario: key, seed, rng: seed | 0, t: 0, zones: {},
+    interventions: NO_INTERVENTIONS(),
+    failures: { camera: false, gps: false, gate: false },
+    history: [], alerts: [], labels: {}, log: [], flags: {}, pending: null, dismissed: {}
+  };
+  s.jitter = Math.round(noise(s) * 3);
+  for (const z of ['A', 'B', 'C']) {
+    s.zones[z] = { id: z, crowd: sc.init[z], capacity: CFG.zones[z].capacity, inflow: 0, outflow: 0, speed: 1.2 };
+  }
+  s.zones.A.inflow = sc.inflowA(0, s.jitter); s.zones.A.outflow = s.zones.A.inflow;
+  s.bus_queue = 2;
+  s.shuttle_delay = sc.delay(0, s.jitter);
+  s.vehicle_flow = sc.vehicles(0, s.jitter);
+  s.temperature = sc.temp(0, s.jitter);
+  s.opposing = false; s.emergency_blocked = false; s.emergency_route_open = true;
+  s.shuttle_count = Math.round(sc.shuttles(0, s.jitter) * 6);
+  refresh(s);
+  return s;
+}
+
+/* One simulation step. Every quantity is caused by another one. */
+function step(s) {
+  const sc = SCENARIOS[s.scenario], I = s.interventions, j = s.jitter;
+  const t = ++s.t;
+  const A = s.zones.A, B = s.zones.B, C = s.zones.C;
+  // always draw the same number of random numbers, so twins stay comparable
+  const r = [noise(s), noise(s), noise(s), noise(s), noise(s), noise(s)];
+
+  // environment + infrastructure
+  s.temperature = sc.temp(t, j) + r[0] * 0.3;
+  s.opposing = sc.opposing(t, j);
+  s.emergency_blocked = sc.blocked(t, j) && !I.emergency;
+  s.emergency_route_open = !s.emergency_blocked;
+
+  // ZONE A — pilgrim corridor
+  let inA = sc.inflowA(t, j) * (1 + 0.06 * r[1]);
+  const rerouted = I.reroute ? inA * 0.30 : 0;              // rerouting: A arrivals -> alternate walkway -> B
+  inA -= rerouted;
+  const capA = A.capacity * (I.gate ? 1.25 : 1);             // gate: more effective capacity
+  A.speed = speedFrom(A.crowd / capA) * (s.opposing ? 0.72 : 1);   // density up -> speed down
+  const backPressure = 1 - 0.7 * clamp((s.zones.B.density - 0.6) / 0.5);   // a full interchange backs up the corridor
+  // flow = density x speed (fundamental diagram): peaks at mid density, collapses when packed
+  const crossing = 1 - 0.3 * clamp((s.vehicle_flow - 100) / 80);   // heavy traffic at the crossing holds pedestrians
+  const outCapA = crossing * 188 * (A.crowd / capA) * A.speed * (I.gate ? 1.35 : 1) * backPressure;
+  const outA = Math.min(A.crowd + inA, outCapA * (1 + 0.04 * r[2]));
+  A.inflow = inA; A.outflow = outA;
+  A.crowd = Math.max(0, A.crowd + inA - outA);                     // inflow > outflow -> crowd up
+  const dA = A.crowd / capA;
+  const spill = dA > 0.92 ? Math.min(A.crowd, (dA - 0.92) * 350) : 0;   // over-capacity spills into the emergency lane
+  A.crowd -= spill;
+
+  // TRANSPORT — shuttles and vehicles
+  const arrivals = sc.shuttles(t, j) * (I.throttle ? 0.6 : 1) * (1 + 0.1 * r[3]);
+  s.vehicle_flow = (sc.vehicles(t, j) * (I.diversion ? 0.55 : 1) + arrivals * 4) * (1 + 0.05 * r[4]);
+  const trafficDrag = 1 + Math.max(0, s.vehicle_flow - 90) / 70;
+  s.shuttle_delay = sc.delay(t, j) * trafficDrag + s.bus_queue * 0.15;
+  const dB0 = B.crowd / B.capacity;
+  const service = 6.2 * (1 - 0.4 * clamp(dB0 - 0.6)) / (1 + s.shuttle_delay / 6);
+  s.bus_queue += arrivals;
+  const served = Math.min(s.bus_queue, service);
+  s.bus_queue = Math.min(35, s.bus_queue - served);                 // arrivals > service -> queue up (extra buses held at depot)
+  s.shuttle_count = Math.round(sc.shuttles(t, j) * 6 * (I.throttle ? 0.6 : 1));
+
+  // ZONE B — shuttle interchange (receives A outflow, rerouted walkers, shuttle drop-offs)
+  const inB = 0.65 * outA + rerouted + arrivals * 22;
+  B.speed = speedFrom(dB0);
+  const pickups = Math.min(0.3 * (B.crowd + inB), served * CFG.shuttleCapacity);
+  const roomC = clamp((1.1 - C.crowd / C.capacity) / 0.5);          // a full emergency zone backs up the interchange
+  const walkC = Math.min(B.crowd + inB - pickups, (45 * (B.speed / 1.3) + 0.04 * B.crowd) * roomC);
+  B.inflow = inB; B.outflow = pickups + walkC;
+  B.crowd = Math.max(0, B.crowd + inB - B.outflow);
+
+  // ZONE C — emergency access
+  const inC = walkC + spill;
+  const outC = Math.min(C.crowd + inC, (s.emergency_route_open ? 110 : 12) * (1 + 0.05 * r[5]));
+  C.inflow = inC; C.outflow = outC;
+  C.crowd = Math.max(0, C.crowd + inC - outC);
+  C.speed = speedFrom(C.crowd / C.capacity);
+
+  refresh(s);
+  return s;
+}
+
+/* Derived values, sensors, risk. Never consumes random numbers. */
+function refresh(s) {
+  const I = s.interventions, A = s.zones.A;
+  s.effCapA = A.capacity * (I.gate ? 1.25 : 1);
+  for (const z of ['A', 'B', 'C']) {
+    const Z = s.zones[z];
+    Z.density = Z.crowd / (z === 'A' ? s.effCapA : Z.capacity);
+  }
+  A.direction = s.opposing ? 'Mixed (opposing)' : 'North-East';
+  s.zones.B.direction = 'East'; s.zones.C.direction = 'South';
+  s.gate_status = I.gate ? 'OPEN' : 'CLOSED';
+  s.zone_capacity = Math.round(s.effCapA);
+  s.heat_index = s.temperature + 0.35 * (s.temperature - 27);
+  const w = Math.sin(s.t * 0.7) * 0.01;
+  s.sensors = {
+    camera:  { name: 'Cameras (anonymous counts)', conf: s.failures.camera ? 0.54 : 0.96 + w, online: !s.failures.camera },
+    gps:     { name: 'Shuttle GPS', conf: s.failures.gps ? 0.40 : 0.92 - w, online: !s.failures.gps },
+    gate:    { name: 'Gate counters', conf: s.failures.gate ? 0.50 : 0.98, online: !s.failures.gate },
+    weather: { name: 'Weather station', conf: 0.99, online: true }
+  };
+  s.minConf = Math.min(...Object.values(s.sensors).map(x => x.conf));
+  s.degraded = s.minConf < 0.75;
+  Object.assign(s, computeRisk(s));
+  s.level = levelOf(s.risk);
+  s.hazard = isHazard(s);
+}
+
+/* ---------- 6. RISK ENGINE (interpretable, one function) ---------- */
+function computeRisk(s) {
+  const A = s.zones.A, B = s.zones.B, C = s.zones.C;
+  const comp = {
+    density:     clamp((Math.max(A.density, B.density * 0.9, C.density * 0.9) - 0.45) / 0.55),
+    flow:        clamp((A.inflow - A.outflow) / 50),
+    movement:    clamp((1.15 - A.speed) / 0.85),
+    shuttle:     clamp(0.6 * s.bus_queue / 18 + 0.4 * s.shuttle_delay / 14),
+    conflict:    clamp(0.75 * (s.vehicle_flow / 140) * clamp(B.density / 0.7 + 0.3) + (s.opposing ? 0.35 : 0)),
+    emergency:   s.emergency_route_open ? clamp((C.density - 0.5) / 0.5) : clamp(0.6 + 0.4 * (C.density - 0.3) / 0.6),
+    heat:        clamp((s.heat_index - 32) / 14),
+    uncertainty: clamp((1 - s.minConf) / 0.6)
+  };
+  const W = CFG.weights;
+  let risk = 0;
+  for (const k in comp) risk += (W[k] || 0) * comp[k];
+  const overCap = clamp((A.density - 1) / 0.25) * 0.10;   // capacity exceeded
+  risk = clamp(risk + overCap);
+  const zoneRisk = {
+    A: clamp(0.6 * comp.density + 0.2 * comp.flow + 0.2 * comp.movement + overCap),
+    B: clamp(0.4 * clamp((B.density - 0.3) / 0.7) + 0.35 * comp.shuttle + 0.25 * comp.conflict),
+    C: clamp(0.5 * comp.emergency + 0.5 * clamp((C.density - 0.3) / 0.7))
+  };
+  return { risk, comp, overCap, zoneRisk };
+}
+
+/* Synthetic ground-truth label: "this situation was dangerous".
+   Defined from density + speed only, NOT from the risk score. */
+function isHazard(s) {
+  return ['A', 'B'].some(z => s.zones[z].density >= CFG.hazardRule.density && s.zones[z].speed <= CFG.hazardRule.speed);
+}
+
+/* ---------- 7. FORECAST + WHAT-IF (always on a cloned twin) ---------- */
+function cloneState(s) {
+  const c = deep({ ...s, history: [], alerts: [], log: [], labels: {} });
+  return c;
+}
+function project(s, h, apply) {
+  const twin = cloneState(s);
+  if (apply) twin.interventions[apply] = true;
+  refresh(twin);
+  const path = [];
+  for (let i = 0; i < h; i++) { step(twin); path.push(twin.risk); }
+  return { twin, risk: twin.risk, peak: Math.max(...path), path };
+}
+function compareInterventions(s, h = CFG.horizon) {
+  const base = project(s, h, null);
+  const rows = Object.keys(INTERVENTIONS)
+    .filter(k => !s.interventions[k])
+    .map(k => { const p = project(s, h, k); return { key: k, risk: p.risk, twin: p.twin, reduction: base.risk > 0 ? (base.risk - p.risk) / base.risk * 100 : 0 }; })
+    .sort((a, b) => a.risk - b.risk);
+  return { base, rows };
+}
+
+/* Counterfactual twin: same seed, same scenario, same failures, no interventions */
+function counterfactual(s) {
+  const c = newState(s.scenario, s.seed);
+  c.failures = { ...s.failures }; refresh(c);
+  const path = [];
+  for (let i = 0; i < s.t; i++) { step(c); path.push(c.risk); }
+  return path;
+}
+
+/* ---------- 8. HORIZON EXPERIMENT ----------
+   Question: how far ahead can we forecast "this situation was dangerous"
+   and still be right often enough?
+   Forecaster: simple trend extrapolation of the risk score (a stand-in for a
+   future trained temporal model; it does NOT peek at the simulator).
+   Truth: the synthetic hazard label at t+h.                                  */
+function horizonExperiment(seeds = 12, maxH = 12) {
+  const runs = [];
+  for (const key of Object.keys(SCENARIOS)) {
+    for (let k = 0; k < seeds; k++) {
+      const s = newState(key, CFG.seed + k * 7919);
+      const risk = [], haz = [];
+      for (let i = 0; i < CFG.steps; i++) { step(s); risk.push(s.risk); haz.push(s.hazard); }
+      runs.push({ risk, haz });
+    }
+  }
+  const out = [];
+  for (let h = 1; h <= maxH; h++) {
+    let tp = 0, fp = 0, fn = 0, tn = 0, ae = 0, n = 0;
+    for (const { risk, haz } of runs) {
+      for (let t = 3; t + h < risk.length; t++) {
+        if (haz[t]) continue;   // only situations that are not dangerous yet
+        const slope = (risk[t] - risk[t - 3]) / 3;
+        const f = clamp(risk[t] + slope * h);
+        const pred = f >= CFG.alarmThreshold;
+        const truth = haz[t + h];
+        if (pred && truth) tp++; else if (pred && !truth) fp++; else if (!pred && truth) fn++; else tn++;
+        ae += Math.abs(f - risk[t + h]); n++;
+      }
+    }
+    const precision = tp + fp ? tp / (tp + fp) : 0;
+    const recall = tp + fn ? tp / (tp + fn) : 0;
+    const f1 = precision + recall ? 2 * precision * recall / (precision + recall) : 0;
+    out.push({ h, precision, recall, f1, mae: ae / n, samples: n, positives: tp + fn });
+  }
+  // chosen horizon = highest F1 (ties go to the shorter horizon)
+  const best = out.reduce((a, b) => (b.f1 > a.f1 + 1e-9 ? b : a));
+  return { rows: out, best, runs: runs.length };
+}
+/*ENGINE-END*/
+if (typeof module !== 'undefined') module.exports = { CFG, DEFAULTS, SCENARIOS, INTERVENTIONS, newState, step, refresh, project, compareInterventions, counterfactual, horizonExperiment, levelOf };
+
+/* ================================================================
+   MIIQAT AI — INTERFACE
+   Reads the engine above; never computes risk itself.
+   ================================================================ */
+const $ = id => document.getElementById(id);
+const LISTENERS = [];
+function on(target, type, fn) { target.addEventListener(type, fn); LISTENERS.push([target, type, fn]); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const pct = x => Math.round(x * 100) + '%';
+const n0 = x => Math.round(x).toLocaleString('en-US');
+const r2 = x => (+x).toFixed(2);
+// Reductions are computed from the same 2-decimal values the screen shows, so anyone can check the arithmetic.
+const rr = x => Math.round(x * 100) / 100;
+const redPct = (before, after) => rr(before) > 0 ? (rr(before) - rr(after)) / rr(before) * 100 : 0;
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { } }
+};
+function mergeDeep(a, b) { for (const k in b) { if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) && a[k]) mergeDeep(a[k], b[k]); else a[k] = b[k]; } return a; }
+const savedCfg = store.get('miqaat.cfg');
+if (savedCfg) CFG = mergeDeep(deep(DEFAULTS), savedCfg);
+
+const PAGES = [['start', 'Start'], ['live', 'Live monitor'], ['map', 'Zone map'], ['why', 'Why this risk?'], ['scenarios', 'Scenarios'], ['whatif', 'What-if simulation'], ['results', '60-step results'], ['labels', 'Labels & horizon'], ['privacy', 'Privacy & sensors'], ['how', 'How it works'], ['settings', 'Settings']];
+const COMP = {
+  density: ['Crowd density', 'Fullest zone vs its capacity'],
+  flow: ['Flow imbalance', 'Zone A inflow minus outflow'],
+  movement: ['Walking speed', 'Slower movement in Zone A'],
+  shuttle: ['Shuttle congestion', 'Bus queue and shuttle delay'],
+  conflict: ['Crowd–traffic interaction', 'Vehicles near a crowded interchange'],
+  emergency: ['Emergency access', 'Route blocked or emergency zone filling'],
+  heat: ['Heat', 'Heat index'],
+  uncertainty: ['Sensor uncertainty', 'Lowest sensor confidence']
+};
+
+let live = newState(CFG.scenario);
+let page = 'start', playing = null, selectedIv = 'reroute', selectedZone = 'A';
+let approvedMsg = null, lastAudit = null, horizonResult = null, demo = null, proj = null;
+
+const zn = z => CFG.zones[z].name;
+const hLabel = () => `${CFG.horizon} steps (≈${+(CFG.horizon * CFG.stepMinutes).toFixed(1)} simulated min)`;
+const lv = l => 'lvl-' + l;
+const pill = (l, extra = '') => `<span class="pill ${lv(l)}">${l}${extra}</span>`;
+function clock(t) { const m = 16 * 60 + 40 + Math.round(t * CFG.stepMinutes); return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+function toast(msg) { const el = $('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2600); }
+
+/* ---------------- navigation ---------------- */
+function buildNav() {
+  $('nav').innerHTML = PAGES.map(([id, label], i) => `<button data-go="${id}"><span>${String(i + 1).padStart(2, '0')}</span><b>${esc(label)}</b></button>`).join('');
+}
+function go(p, noScroll) {
+  if (!PAGES.some(x => x[0] === p)) p = 'start';
+  page = p;
+  for (const [id] of PAGES) $('p-' + id).hidden = id !== p;
+  document.querySelectorAll('#nav button').forEach(b => b.setAttribute('aria-current', b.dataset.go === p ? 'page' : 'false'));
+  try { history.replaceState(null, '', '#' + p); } catch (e) { }
+  if (!noScroll) window.scrollTo({ top: 0 });
+  render();
+}
+
+/* ---------------- simulation control ---------------- */
+function record() {
+  const s = live, A = s.zones.A;
+  s.history.push({
+    t: s.t, risk: s.risk, level: s.level, hazard: s.hazard, crowdA: A.crowd, dA: A.density, dB: s.zones.B.density, dC: s.zones.C.density, queue: s.bus_queue,
+    row: {
+      timestamp: s.t, zone_id: 'A', capacity: Math.round(s.effCapA), crowd_count: Math.round(A.crowd), inflow: A.inflow.toFixed(1), outflow: A.outflow.toFixed(1),
+      mean_speed: A.speed.toFixed(2), dominant_direction: A.direction, bus_queue: Math.round(s.bus_queue), emergency_route_open: s.emergency_route_open,
+      camera_confidence: s.sensors.camera.conf.toFixed(2), gps_confidence: s.sensors.gps.conf.toFixed(2), gate_confidence: s.sensors.gate.conf.toFixed(2),
+      heat_index: s.heat_index.toFixed(1), intervention: Object.keys(s.interventions).filter(k => s.interventions[k]).join('+') || 'none',
+      downstream_risk: s.zoneRisk.B.toFixed(3), total_network_risk: s.risk.toFixed(3), synthetic_label: s.hazard ? 'dangerous' : 'not_dangerous'
+    }
+  });
+}
+function liveStep() {
+  if (live.t >= CFG.steps) return false;
+  step(live); record(); checkAlerts();
+  if (live.t >= CFG.steps) { addAlert('SIMULATION COMPLETE', `All ${CFG.steps} steps finished. See 60-step results.`, 'LOW'); if (!demo) toast('Simulation complete. Open “60-step results”.'); }
+  return true;
+}
+function play() {
+  if (playing) return;
+  if (live.t >= CFG.steps) { toast('Run finished. Press Reset to start again.'); return; }
+  playing = setInterval(() => { if (!liveStep()) pause(); render(); }, CFG.playSpeedMs);
+  render();
+}
+function pause() { clearInterval(playing); playing = null; render(); }
+function runAll() { pause(); while (live.t < CFG.steps) liveStep(); render(); }
+function resetSim(key = live.scenario) { pause(); live = newState(key); approvedMsg = null; render(); }
+function loadScenario(key, quiet) {
+  CFG.scenario = key; resetSim(key);
+  if (!quiet) { toast(`Loaded “${SCENARIOS[key].name}”. Press Play.`); go('live'); }
+}
+
+/* ---------------- alerts + recommendations ---------------- */
+function addAlert(kind, text, level) { live.alerts.unshift({ t: live.t, clock: clock(live.t), kind, text, level }); }
+function edge(key, on, off, fire, fireOff) {
+  const f = live.flags;
+  if (!f[key] && on) { f[key] = true; fire(); } else if (f[key] && off) { f[key] = false; fireOff && fireOff(); }
+}
+function contribs(s) {
+  return Object.keys(s.comp).map(k => ({ key: k, label: COMP[k][0], value: s.comp[k], weighted: s.comp[k] * (CFG.weights[k] || 0) })).sort((a, b) => b.weighted - a.weighted);
+}
+function checkAlerts() {
+  const s = live, A = s.zones.A;
+  const prev = s.history.length > 1 ? s.history[s.history.length - 2].level : 'LOW';
+  const up = LEVELS.indexOf(s.level) - LEVELS.indexOf(prev);
+  if (up > 0) addAlert(s.level + ' RISK', `Network risk ${r2(s.risk)}: ${LEVEL_TEXT[s.level].toLowerCase()}. Largest contributor: ${contribs(s)[0].label.toLowerCase()}.`, s.level);
+  if (up < 0) addAlert('RISK EASING', `Network risk down to ${r2(s.risk)} (${s.level}).`, s.level);
+  edge('imb', A.inflow - A.outflow > 15, A.inflow - A.outflow < 5, () => addAlert('NETWORK ALERT', `Pedestrian inflow exceeds outflow in ${zn('A')} by ${n0(A.inflow - A.outflow)} per step.`, 'MEDIUM'));
+  edge('capA', A.density > 0.85, A.density < 0.8, () => addAlert('CROWD ALERT', `${zn('A')} approaching capacity (${pct(A.density)}).`, 'HIGH'));
+  edge('queue', s.bus_queue > 12, s.bus_queue < 8, () => addAlert('TRANSPORT ALERT', `Shuttle queue increasing: ${n0(s.bus_queue)} buses waiting at ${zn('B')}.`, 'MEDIUM'));
+  edge('conf', s.comp.conflict > 0.5, s.comp.conflict < 0.4, () => addAlert('TRANSPORT ALERT', 'Pedestrian–vehicle interaction rising near the interchange.', 'MEDIUM'));
+  edge('blocked', !s.emergency_route_open, s.emergency_route_open, () => addAlert('EMERGENCY ACCESS', `Emergency route in ${zn('C')} is blocked.`, 'HIGH'), () => addAlert('EMERGENCY ACCESS', 'Emergency route open again.', 'LOW'));
+  maybeRecommend();
+}
+function maybeRecommend() {
+  const s = live;
+  if (s.pending || s.t - (s.lastDecision == null ? -99 : s.lastDecision) < 5) return;
+  const p = project(s, CFG.horizon, null).risk;
+  if (!(s.risk >= CFG.thresholds.high || p >= CFG.thresholds.high)) return;
+  const cmp = compareInterventions(s), top = cmp.rows[0];
+  if (!top || top.reduction < 3) return;
+  s.pending = { key: top.key, t: s.t, before: cmp.base.risk, after: top.risk, reduction: top.reduction };
+  addAlert('RECOMMENDATION', `Recommended intervention: ${INTERVENTIONS[top.key].name}. Projected risk ${r2(cmp.base.risk)} → ${r2(top.risk)} in ${CFG.horizon} steps. Awaiting operator approval.`, 'MEDIUM');
+}
+function approve(key) {
+  if (live.interventions[key]) return;
+  const cmp = compareInterventions(live), row = cmp.rows.find(r => r.key === key);
+  live.interventions[key] = true;
+  live.log.push({ t: live.t, key, before: cmp.base.risk, after: row ? row.risk : null, riskNow: live.risk });
+  refresh(live);
+  live.pending = null; live.lastDecision = live.t;
+  approvedMsg = { t: live.t, key };
+  addAlert('OPERATOR APPROVED', `${INTERVENTIONS[key].name} approved by the operator and activated in the simulation.`, 'LOW');
+  render();
+}
+function dismiss() {
+  if (!live.pending) return;
+  addAlert('DISMISSED', `Operator dismissed: ${INTERVENTIONS[live.pending.key].name}.`, 'LOW');
+  live.pending = null; live.lastDecision = live.t; render();
+}
+function stopIv(key) {
+  live.interventions[key] = false; refresh(live);
+  addAlert('INTERVENTION ENDED', `${INTERVENTIONS[key].name} switched off by the operator.`, 'LOW'); render();
+}
+function recHTML() {
+  const p = live.pending;
+  if (!p && approvedMsg && live.t - approvedMsg.t <= 4) {
+    return `<div class="approved"><span class="tick">✓</span><div>OPERATOR APPROVED · ${esc(INTERVENTIONS[approvedMsg.key].name)} is active in the simulation from step ${approvedMsg.t}.<br><span class="muted small">Recommended intervention activated in simulation. A real deployment would need authorised human sign-off; the system never acts on its own.</span></div></div>`;
+  }
+  if (!p) return '';
+  const top3 = contribs(live).slice(0, 2).map(c => c.label.toLowerCase()).join(' and ');
+  return `<div class="card rec">
+    <div class="eyebrow" style="color:var(--brand-ink)">AI recommendation · awaiting operator · step ${p.t}</div>
+    <h3>Consider: ${esc(INTERVENTIONS[p.key].name)}</h3>
+    <p>${esc(INTERVENTIONS[p.key].effect)} Risk is being driven mainly by ${esc(top3)}.</p>
+    <p class="muted small">Projected network risk in ${CFG.horizon} steps: <b class="mono">${r2(p.before)}</b> without action → <b class="mono">${r2(p.after)}</b> with it (${redPct(p.before, p.after).toFixed(1)}% lower, synthetic simulation). Nothing changes until you approve.</p>
+    <div class="btn-row"><button class="btn big" data-rec="review">Review</button><button class="btn good big" data-rec="approve">✓ Approve</button><button class="btn bad big" data-rec="dismiss">Dismiss</button></div>
+  </div>`;
+}
+
+/* ---------------- chart ---------------- */
+function chartSVG({ series = [], markers = [], hazard = [], peak = null, now = null, H = 320 }) {
+  const W = 960, L = 52, R = 118, T = 18, B = 42, iw = W - L - R, ih = H - T - B, xmax = CFG.steps;
+  const x = t => L + (Math.min(t, xmax) / xmax) * iw, y = v => T + (1 - v) * ih;
+  let g = '';
+  hazard.forEach(t => { g += `<rect x="${x(t - 0.5).toFixed(1)}" y="${T}" width="${(iw / xmax).toFixed(1)}" height="${ih}" fill="var(--crit)" opacity=".10"/>`; });
+  [0, 0.25, 0.5, 0.75, 1].forEach(v => { g += `<line x1="${L}" x2="${L + iw}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 10}" y="${y(v) + 4}" text-anchor="end" font-size="12" fill="var(--ink-3)" font-family="JetBrains Mono,monospace">${v.toFixed(2)}</text>`; });
+  [['medium', 'MEDIUM', 'var(--med)'], ['high', 'HIGH', 'var(--high)'], ['critical', 'CRITICAL', 'var(--crit)']].forEach(([k, lab, c]) => {
+    const v = CFG.thresholds[k];
+    g += `<line x1="${L}" x2="${L + iw}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="6 5" stroke-width="1.5"/><text x="${L + iw + 8}" y="${y(v) + 4}" font-size="12" font-weight="700" fill="${c}" font-family="Plus Jakarta Sans,sans-serif">${lab} ${v.toFixed(2)}</text>`;
+  });
+  [1, 10, 20, 30, 40, 50, 60].filter(t => t <= xmax).concat(xmax % 10 && xmax !== 1 ? [xmax] : []).forEach(t => { g += `<text x="${x(t)}" y="${H - 14}" text-anchor="middle" font-size="12" fill="var(--ink-3)" font-family="JetBrains Mono,monospace">t=${t}</text>`; });
+  markers.forEach(m => { g += `<line x1="${x(m.t)}" x2="${x(m.t)}" y1="${T}" y2="${T + ih}" stroke="var(--brand)" stroke-width="2" stroke-dasharray="3 4"/><text x="${x(m.t) + 6}" y="${T + 14 + (m.row || 0) * 16}" font-size="12" font-weight="700" fill="var(--brand-ink)" font-family="Plus Jakarta Sans,sans-serif">${esc(m.label)}</text>`; });
+  series.forEach(s => {
+    if (!s.pts.length) return;
+    const d = s.pts.map((p, i) => (i ? 'L' : 'M') + x(p.t).toFixed(1) + ' ' + y(p.v).toFixed(1)).join(' ');
+    if (s.area && s.pts.length > 1) g += `<path d="${d} L ${x(s.pts[s.pts.length - 1].t).toFixed(1)} ${y(0)} L ${x(s.pts[0].t).toFixed(1)} ${y(0)} Z" fill="${s.color}" opacity=".08"/>`;
+    g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 3}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
+  });
+  if (peak) g += `<circle cx="${x(peak.t)}" cy="${y(peak.v)}" r="6" fill="var(--surface)" stroke="var(--crit)" stroke-width="3"/><text x="${x(peak.t)}" y="${y(peak.v) - 12}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--crit)" font-family="Plus Jakarta Sans,sans-serif">Peak ${r2(peak.v)} (t=${peak.t})</text>`;
+  if (now) g += `<circle cx="${x(now.t)}" cy="${y(now.v)}" r="7" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Risk score over time">${g}</svg>`;
+}
+const markersOf = s => s.log.map((l, i) => ({ t: l.t, label: '✓ ' + INTERVENTIONS[l.key].short, row: i % 3 }));
+function peakOf(hist) { if (!hist.length) return null; const p = hist.reduce((a, b) => b.risk > a.risk ? b : a); return { t: p.t, v: p.risk }; }
+
+/* ---------------- render: shared ---------------- */
+function render() {
+  proj = project(live, CFG.horizon, null);
+  $('sbStep').textContent = live.t; $('sbMax').textContent = CFG.steps;
+  $('sbScen').textContent = SCENARIOS[live.scenario].name;
+  const sb = $('sbRisk'); sb.className = 'pill ' + lv(live.level); sb.textContent = `${r2(live.risk)} · ${live.level}`;
+  $('playBtn').textContent = playing ? '⏸ Pause' : '▶ Play';
+  $('statusDot').className = 'dot pulse' + (live.degraded ? ' warn' : '');
+  $('statusText').textContent = live.degraded ? 'DEGRADED MODE' : 'SIMULATION ONLINE';
+  ({ live: renderLive, map: renderMap, why: renderWhy, scenarios: renderScen, whatif: renderWhatIf, results: renderResults, labels: renderLabels, privacy: renderPrivacy, how: renderHow, settings: renderSettingsOnce }[page] || (() => { }))();
+}
+
+/* ---------------- LIVE ---------------- */
+function gaugeHTML(r) {
+  const th = CFG.thresholds;
+  return `<div class="gauge" style="--m:${th.medium * 100}%;--h:${th.high * 100}%;--c:${th.critical * 100}%"><div class="needle" style="left:${(r * 100).toFixed(1)}%"></div></div>
+  <div class="gauge-scale"><span style="left:0;transform:none">0.00</span><span style="left:${th.medium * 100}%">${th.medium.toFixed(2)}</span><span style="left:${th.high * 100}%">${th.high.toFixed(2)}</span><span style="left:${th.critical * 100}%">${th.critical.toFixed(2)}</span><span style="left:100%;transform:translateX(-100%)">1.00</span></div>`;
+}
+function labelHTML() {
+  const cur = live.labels[live.t];
+  const count = Object.keys(live.labels).length;
+  return `<div class="eyebrow">Operator label · step ${live.t}</div>
+    <h3>Was this situation dangerous?</h3>
+    <p class="muted">Your answer is saved as a training label for a future forecasting model. ${count ? `${count} step${count > 1 ? 's' : ''} labelled so far.` : 'No labels yet.'}</p>
+    <div class="btn-row">
+      <button class="btn big" data-label="dangerous" aria-pressed="${cur === 'dangerous'}" ${live.t ? '' : 'disabled'}>⚠ This situation was dangerous</button>
+      <button class="btn big" data-label="safe" aria-pressed="${cur === 'safe'}" ${live.t ? '' : 'disabled'}>✓ This situation was not dangerous</button>
+    </div>
+    ${live.t ? '' : '<p class="muted small">Run at least one step to label it.</p>'}`;
+}
+function renderLive() {
+  const s = live, A = s.zones.A, pl = levelOf(proj.risk), d = proj.risk - s.risk;
+  $('recSlotLive').innerHTML = recHTML();
+  $('riskCard').className = 'card ' + lv(s.level);
+  $('riskCard').innerHTML = `<div class="eyebrow">Network risk · now · t = ${s.t}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end"><div class="risk-num">${r2(s.risk)}</div><div style="display:flex;flex-direction:column;gap:8px;padding-bottom:8px">${pill(s.level)}<b>${LEVEL_TEXT[s.level]}</b></div></div>
+    ${gaugeHTML(s.risk)}
+    <p class="muted small">Interpretable prototype risk engine · synthetic data</p>`;
+  $('forecastCard').className = 'card ' + lv(pl);
+  $('forecastCard').innerHTML = `<div class="eyebrow">Short-horizon forecast · +${CFG.horizon} steps</div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end"><div class="risk-num">${r2(proj.risk)}</div><div style="display:flex;flex-direction:column;gap:8px;padding-bottom:8px">${pill(pl)}<b>${d > 0.02 ? '↑ rising' : d < -0.02 ? '↓ easing' : '→ steady'} (${d >= 0 ? '+' : ''}${r2(d)})</b></div></div>
+    <p>Projected network risk in ${hLabel()}.</p>
+    <p class="muted small">Synthetic short-horizon simulation. The horizon is provisional; the Labels &amp; horizon page tests which horizon works best. Simulation confidence ${pct(s.minConf)} (from sensor confidence, not real-world certainty).</p>
+    <div class="btn-row"><button class="btn" data-go="why">Why?</button><button class="btn" data-go="whatif">Test an intervention</button></div>`;
+  const conflict = s.comp.conflict;
+  $('kpis').innerHTML = [
+    ['Crowd · ' + zn('A'), n0(A.crowd), `of ${n0(s.effCapA)} capacity`],
+    ['Density', pct(A.density), `${zn('A')}`],
+    ['Vehicle / shuttle conflict', r2(conflict), conflict > 0.5 ? 'High interaction' : conflict > 0.25 ? 'Moderate interaction' : 'Low interaction'],
+    ['Bus queue', n0(s.bus_queue), `${s.shuttle_delay.toFixed(1)} min shuttle delay`],
+    ['Emergency access', s.emergency_route_open ? 'OPEN' : 'BLOCKED', `${zn('C')} ${pct(s.zones.C.density)} full`],
+    ['Heat index', s.heat_index.toFixed(1) + '<small> °C</small>', `Air ${s.temperature.toFixed(1)} °C`]
+  ].map(([k, v, sub], i) => `<div class="tile"><div class="eyebrow">${esc(k)}</div><div class="v" ${i === 4 && !s.emergency_route_open ? 'style="color:var(--crit)"' : ''}>${v}</div><div class="sub">${esc(sub)}</div></div>`).join('');
+  $('labelCard').innerHTML = labelHTML();
+  const hist = s.history;
+  const fpts = s.t ? [{ t: s.t, v: s.risk }].concat(proj.path.map((v, i) => ({ t: s.t + i + 1, v })).filter(p => p.t <= CFG.steps)) : [];
+  $('liveChart').innerHTML = chartSVG({
+    series: [{ pts: hist.map(h => ({ t: h.t, v: h.risk })), color: 'var(--ink)', area: true }, { pts: fpts, color: 'var(--brand)', dash: '2 6', w: 3 }],
+    markers: markersOf(s), hazard: hist.filter(h => h.hazard).map(h => h.t), peak: peakOf(hist), now: s.t ? { t: s.t, v: s.risk } : null
+  }) + `<div class="chart-legend"><span><i></i>Network risk</span><span><i style="background:var(--brand)"></i>Short-horizon forecast</span><span><i style="background:var(--brand);height:12px;width:3px"></i>Operator-approved intervention</span><span><i style="background:var(--crit);opacity:.25;height:12px"></i>Synthetic “dangerous” label</span></div>`;
+  $('alerts').innerHTML = s.alerts.length ? s.alerts.map(a => `<div class="alert ${lv(a.level)}"><span class="time">${a.clock} · t=${a.t}</span><span class="kind">${esc(a.kind)}</span><span>${esc(a.text)}</span></div>`).join('') : '<p class="muted">No alerts yet. Alerts are generated from the simulation state as it changes.</p>';
+}
+
+/* ---------------- MAP / DIGITAL TWIN ---------------- */
+const twin = { built: false, parts: { pedA: [], pedB: [], pedC: [], walk: [], bus: [], car: [] }, last: 0 };
+function buildTwin() {
+  $('twin').innerHTML = `<g id="twStatic"></g><g id="twParts"><g id="gCar"></g><g id="gBus"></g><g id="gPedA"></g><g id="gPedB"></g><g id="gPedC"></g><g id="gWalk"></g></g><g id="twTop"></g>`;
+  twin.built = true;
+}
+function renderMap() {
+  if (!twin.built) buildTwin();
+  const s = live, I = s.interventions, zr = s.zoneRisk;
+  const zl = z => levelOf(zr[z]);
+  const zc = z => `var(--${{ LOW: 'low', MEDIUM: 'med', HIGH: 'high', CRITICAL: 'crit' }[zl(z)]})`;
+  const zbox = (z, x, y, w, h) => `<g class="zone-hit" data-zone="${z}" tabindex="0" role="button" aria-label="${esc(zn(z))} details">
+      <rect class="zbox" x="${x}" y="${y}" width="${w}" height="${h}" rx="14" fill="${zc(z)}" fill-opacity="${selectedZone === z ? .16 : .08}" stroke="${zc(z)}" stroke-width="${selectedZone === z ? 3 : 1.5}"/>
+      <text x="${x + 16}" y="${y + 26}" font-size="12" font-weight="700" letter-spacing="1.5" fill="var(--ink-3)" font-family="Plus Jakarta Sans,sans-serif">ZONE ${z}</text>
+      <text x="${x + 16}" y="${y + 48}" font-size="18" font-weight="700" fill="var(--ink)" font-family="Sora,sans-serif">${esc(zn(z))}</text>
+      <text x="${x + 16}" y="${y + 72}" font-size="14" font-weight="700" fill="${zc(z)}" font-family="JetBrains Mono,monospace">${pct(s.zones[z].density)} full · ${zl(z)}</text>
+    </g>`;
+  const open = s.emergency_route_open;
+  $('twStatic').innerHTML = `
+    <path d="M 150 60 C 150 8, 600 8, 600 60" fill="none" stroke="${I.reroute ? 'var(--brand)' : 'var(--line-2)'}" stroke-width="${I.reroute ? 4 : 2}" stroke-dasharray="8 7"/>
+    <text x="375" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="${I.reroute ? 'var(--brand-ink)' : 'var(--ink-3)'}" font-family="Plus Jakarta Sans,sans-serif">Alternate walkway ${I.reroute ? '· REROUTING ACTIVE' : '· idle'}</text>
+    ${zbox('A', 30, 60, 370, 300)}${zbox('B', 440, 60, 320, 300)}${zbox('C', 790, 60, 180, 300)}
+    <path d="M 60 225 L 380 225" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 8"/>
+    <text x="215" y="148" text-anchor="middle" font-size="13" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">pilgrim corridor → ${esc(s.zones.A.direction)}</text>
+    <rect x="404" y="180" width="32" height="90" rx="6" fill="var(--surface-2)" stroke="var(--line-2)"/>
+    <text x="420" y="290" text-anchor="middle" font-size="11" fill="var(--ink-3)" font-family="Plus Jakarta Sans,sans-serif">main gate</text>
+    <rect x="404" y="92" width="32" height="56" rx="6" fill="${I.gate ? 'var(--low)' : 'var(--surface-2)'}" fill-opacity="${I.gate ? .35 : 1}" stroke="${I.gate ? 'var(--low)' : 'var(--line-2)'}" stroke-width="2" ${I.gate ? '' : 'stroke-dasharray="4 3"'}/>
+    <text x="420" y="164" text-anchor="middle" font-size="11" font-weight="700" fill="${I.gate ? 'var(--low)' : 'var(--ink-3)'}" font-family="Plus Jakarta Sans,sans-serif" style="paint-order:stroke" stroke="var(--surface)" stroke-width="3"><tspan x="420">alt gate</tspan><tspan x="420" dy="13">${I.gate ? 'OPEN' : 'CLOSED'}</tspan></text>
+    <line x1="450" y1="300" x2="750" y2="300" stroke="var(--line-2)" stroke-width="18" stroke-linecap="round" opacity=".6"/>
+    <text x="600" y="345" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">shuttle bays · ${n0(s.bus_queue)} buses queued · ${s.shuttle_delay.toFixed(1)} min delay${I.throttle ? ' · THROTTLED' : ''}</text>
+    <line x1="950" y1="150" x2="950" y2="340" stroke="${open ? 'var(--route)' : 'var(--crit)'}" stroke-width="10" stroke-dasharray="${open ? '0' : '12 8'}" opacity=".55" stroke-linecap="round"/>
+    <text x="880" y="${open ? 150 : 240}" text-anchor="middle" font-size="13" font-weight="700" fill="${open ? 'var(--route)' : 'var(--crit)'}" font-family="Plus Jakarta Sans,sans-serif" style="paint-order:stroke" stroke="var(--surface)" stroke-width="4">${open ? 'ROUTE OPEN' : '✕ BLOCKED'}</text>
+    <path d="M 400 200 L 440 200" stroke="var(--ink-3)" stroke-width="2" marker-end="url(#ah)"/>
+    <path d="M 760 200 L 790 200" stroke="var(--ink-3)" stroke-width="2" marker-end="url(#ah)"/>
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/></marker></defs>
+    <rect x="20" y="392" width="960" height="40" rx="8" fill="var(--surface-2)"/>
+    <line x1="30" y1="412" x2="970" y2="412" stroke="var(--line-2)" stroke-dasharray="14 10"/>
+    <text x="30" y="456" font-size="12" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">service road · ${n0(s.vehicle_flow)} vehicles per step${I.diversion ? ' · DIVERSION ACTIVE' : ''}</text>
+    ${I.diversion ? '<path d="M 330 432 C 330 460, 280 468, 250 470" fill="none" stroke="var(--brand)" stroke-width="4" stroke-dasharray="8 6"/>' : ''}`;
+  $('zoneBtns').innerHTML = ['A', 'B', 'C'].map(z => `<button class="btn" data-zone="${z}" aria-pressed="${selectedZone === z}">Zone ${z} · ${esc(zn(z))}</button>`).join('');
+  renderZoneDetail();
+  startAnim();
+}
+function renderZoneDetail() {
+  const s = live, z = selectedZone, Z = s.zones[z], zlv = levelOf(s.zoneRisk[z]);
+  const rows = [
+    ['Crowd', n0(Z.crowd)], ['Capacity', n0(z === 'A' ? s.effCapA : Z.capacity)], ['Density', pct(Z.density)],
+    ['Inflow', n0(Z.inflow) + ' / step'], ['Outflow', n0(Z.outflow) + ' / step'], ['Mean speed', Z.speed.toFixed(2) + ' m/s'], ['Direction', Z.direction]
+  ];
+  if (z === 'A') rows.push(['Alternate gate', s.gate_status]);
+  if (z === 'B') rows.push(['Bus queue', n0(s.bus_queue)], ['Shuttle delay', s.shuttle_delay.toFixed(1) + ' min'], ['Vehicle flow', n0(s.vehicle_flow) + ' / step']);
+  if (z === 'C') rows.push(['Emergency route', s.emergency_route_open ? 'OPEN' : 'BLOCKED']);
+  $('zoneDetail').className = 'card ' + lv(zlv);
+  $('zoneDetail').innerHTML = `<div class="eyebrow">Zone ${z} · step ${s.t}</div><h3>${esc(zn(z))}</h3>
+    <div class="vars"><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+    <div style="display:flex;flex-direction:column;gap:12px"><div class="eyebrow">Risk contribution</div><div class="risk-num" style="font-size:56px">${r2(s.zoneRisk[z])}</div>${pill(zlv)}</div></div>`;
+}
+/* particle animation (visual only; uses Math.random, not the simulation seed) */
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function syncPool(gid, arr, target, make, draw) {
+  while (arr.length < target) arr.push(make());
+  arr.length = Math.max(0, Math.round(target));
+  const g = $(gid); if (!g) return;
+  while (g.childNodes.length < arr.length) g.appendChild(document.createElementNS('http://www.w3.org/2000/svg', draw.tag));
+  while (g.childNodes.length > arr.length) g.removeChild(g.lastChild);
+  arr.forEach((p, i) => draw.set(g.childNodes[i], p));
+}
+const R = (a, b) => a + Math.random() * (b - a);
+function bez(u) { const x0 = 150, y0 = 60, x1 = 150, y1 = 8, x2 = 600, y2 = 8, x3 = 600, y3 = 60, v = 1 - u; return [v * v * v * x0 + 3 * v * v * u * x1 + 3 * v * u * u * x2 + u * u * u * x3, v * v * v * y0 + 3 * v * v * u * y1 + 3 * v * u * u * y2 + u * u * u * y3]; }
+function animFrame(ts) {
+  if (page !== 'map') { twin.raf = null; return; }
+  twin.raf = requestAnimationFrame(animFrame);
+  if (ts - twin.last < 33) return; twin.last = ts;
+  const s = live, A = s.zones.A, P = twin.parts, mv = reduceMotion ? 0 : 1;
+  const circ = (fill, r) => ({ tag: 'circle', set: (el, p) => { el.setAttribute('cx', p.x.toFixed(1)); el.setAttribute('cy', p.y.toFixed(1)); el.setAttribute('r', p.r || r); el.setAttribute('fill', p.c || fill); } });
+  const vA = (0.25 + 1.6 * A.speed / 1.3) * mv;
+  syncPool('gPedA', P.pedA, clamp(14 + 110 * Math.min(A.density, 1.3), 8, 160), () => ({ x: R(50, 390), y: R(160, 290), dir: 1 }), circ('var(--ped)', 3.2));
+  const opp = s.opposing ? 0.28 : 0;
+  P.pedA.forEach((p, i) => {
+    const want = (i / P.pedA.length) < opp ? -1 : 1; p.dir = want;
+    p.x += p.dir * vA * R(0.6, 1.2); p.y += R(-0.6, 0.6) * mv; p.y = clamp(p.y, 160, 292);
+    if (p.x > 392) p.x = 48; if (p.x < 48) p.x = 392;
+    p.c = p.dir < 0 ? 'var(--high)' : null;
+  });
+  syncPool('gPedB', P.pedB, clamp(6 + 90 * s.zones.B.density, 4, 140), () => ({ x: R(460, 740), y: R(135, 268) }), circ('var(--ped)', 3.2));
+  P.pedB.forEach(p => { p.x = clamp(p.x + R(-0.8, 0.8) * mv, 460, 740); p.y = clamp(p.y + R(-0.8, 0.8) * mv, 135, 272); });
+  syncPool('gPedC', P.pedC, clamp(3 + 60 * s.zones.C.density, 2, 110), () => ({ x: R(805, 935), y: R(165, 335) }), circ('var(--ped)', 3.2));
+  P.pedC.forEach(p => {
+    if (s.emergency_route_open) { p.y += 1.1 * mv; p.x += (950 - p.x) * 0.01 * mv; if (p.y > 338) { p.y = R(165, 190); p.x = R(805, 935); } }
+    else { p.x = clamp(p.x + R(-0.6, 0.6) * mv, 805, 935); p.y = clamp(p.y + R(-0.6, 0.6) * mv, 165, 335); }
+  });
+  syncPool('gWalk', P.walk, s.interventions.reroute ? 16 : 0, () => ({ u: Math.random(), x: 0, y: 0 }), circ('var(--brand)', 4));
+  P.walk.forEach(p => { p.u = (p.u + 0.004 * mv) % 1; [p.x, p.y] = bez(p.u); });
+  const moving = clamp(Math.round(s.shuttle_count / 6), 0, 6), queued = clamp(Math.round(s.bus_queue), 0, 7);
+  const busTarget = moving + queued;
+  while (P.bus.length < busTarget) P.bus.push({ x: R(460, 740), y: 293 });
+  P.bus.length = busTarget;
+  P.bus.forEach((b, i) => {
+    if (i < queued) { b.x = 452 + i * 40; b.y = 314; b.q = true; }
+    else { if (b.q || b.y !== 293) { b.q = false; b.y = 293; b.x = R(460, 700); } b.x += 1.2 / (1 + s.shuttle_delay / 6) * mv; if (b.x > 740) b.x = 452; }
+  });
+  const gb = $('gBus');
+  while (gb.childNodes.length < P.bus.length) gb.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+  while (gb.childNodes.length > P.bus.length) gb.removeChild(gb.lastChild);
+  P.bus.forEach((b, i) => { const el = gb.childNodes[i]; el.setAttribute('x', b.x.toFixed(1)); el.setAttribute('y', b.y); el.setAttribute('width', 34); el.setAttribute('height', 14); el.setAttribute('rx', 4); el.setAttribute('fill', 'var(--bus)'); el.setAttribute('opacity', b.q ? .55 : 1); });
+  syncPool('gCar', P.car, clamp(Math.round(s.vehicle_flow / 9), 2, 24), () => ({ x: R(30, 970), y: Math.random() < .5 ? 402 : 422 }), circ('var(--car)', 4.5));
+  P.car.forEach(p => { p.x -= (p.y < 412 ? 2.4 : 1.8) * mv; if (p.x < 30) p.x = 970; });
+}
+function startAnim() { if (!twin.raf) twin.raf = requestAnimationFrame(animFrame); }
+
+/* ---------------- WHY ---------------- */
+function sentence(k, s) {
+  const A = s.zones.A, B = s.zones.B, C = s.zones.C;
+  const fullest = [['A', A.density], ['B', B.density], ['C', C.density]].sort((a, b) => b[1] - a[1])[0];
+  return {
+    density: `Density at ${pct(fullest[1])} of capacity in ${zn(fullest[0])}`,
+    flow: A.inflow - A.outflow > 1 ? `Inflow exceeds outflow in ${zn('A')} by ${n0(A.inflow - A.outflow)} per step` : 'Outflow keeps pace with inflow',
+    movement: `Mean walking speed ${A.speed.toFixed(2)} m/s in ${zn('A')}`,
+    shuttle: `${n0(s.bus_queue)} buses queued, ${s.shuttle_delay.toFixed(1)} min shuttle delay`,
+    conflict: `${n0(s.vehicle_flow)} vehicles per step near the interchange${s.opposing ? ', with opposing pedestrian flow' : ''}`,
+    emergency: s.emergency_route_open ? `Emergency zone ${pct(C.density)} full, route open` : 'Emergency route blocked',
+    heat: `Heat index ${s.heat_index.toFixed(1)} °C`,
+    uncertainty: `Lowest sensor confidence ${pct(s.minConf)}`
+  }[k];
+}
+function renderWhy() {
+  const s = live, cs = contribs(s);
+  const trend = s.history.length > 3 ? s.risk - s.history[s.history.length - 4].risk : 0;
+  $('whyTitle').textContent = `Why is risk ${s.level} (${r2(s.risk)})${trend > 0.02 ? ' and increasing' : trend < -0.02 ? ' and easing' : ''}?`;
+  const tagOf = v => v >= 0.66 ? ['HIGH', 'HIGH'] : v >= 0.33 ? ['MODERATE', 'MEDIUM'] : ['LOW', 'LOW'];
+  $('whyCard').innerHTML = `<div class="eyebrow">Contribution of each input · step ${s.t}</div>
+    <div class="bars">${cs.map(c => { const [tag, l] = tagOf(c.value); return `<div class="bar-row ${lv(l)}"><div class="lab">${c.label}<small>${COMP[c.key][1]} · weight ${CFG.weights[c.key].toFixed(2)}</small></div><div class="track"><div class="fill" style="width:${(c.value * 100).toFixed(1)}%"></div></div><div class="tag">${tag} +${c.weighted.toFixed(2)}</div></div>`; }).join('')}
+    ${s.overCap > 0 ? `<div class="bar-row lvl-CRITICAL"><div class="lab">Capacity exceeded<small>Zone A above 100%</small></div><div class="track"><div class="fill" style="width:${s.overCap * 1000}%"></div></div><div class="tag">+${s.overCap.toFixed(2)}</div></div>` : ''}</div>
+    <p class="mono" style="font-size:15px">Sum of weighted contributions = <b>${r2(s.risk)}</b> → ${s.level}</p>`;
+  $('whyTop').className = 'card ' + lv(s.level);
+  $('whyTop').innerHTML = `<div class="eyebrow">${s.level} risk · ${r2(s.risk)}</div><h3>Main contributors</h3>
+    <ol style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;font-size:18px">${cs.slice(0, 5).map(c => `<li>${esc(sentence(c.key, s))}</li>`).join('')}</ol>
+    <div class="tiles"><div class="tile"><div class="eyebrow">Simulation confidence</div><div class="v">${pct(s.minConf)}</div><div class="sub">From sensor confidence. Not real-world certainty.</div></div>
+    <div class="tile"><div class="eyebrow">Forecast horizon</div><div class="v">${CFG.horizon}<small> steps</small></div><div class="sub">Short-horizon · set on the Labels page</div></div>
+    <div class="tile"><div class="eyebrow">Projected risk</div><div class="v">${r2(proj.risk)}</div><div class="sub">${levelOf(proj.risk)} in ${CFG.horizon} steps</div></div></div>`;
+  const A = s.zones.A;
+  const grp = (title, rows) => `<div><div class="eyebrow" style="margin-bottom:10px">${title}</div><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`;
+  $('vars').innerHTML =
+    grp('Crowd · Zone A', [['crowd_count', n0(A.crowd)], ['capacity', n0(A.capacity)], ['crowd_density', pct(A.density)], ['inflow', A.inflow.toFixed(1)], ['outflow', A.outflow.toFixed(1)], ['mean_speed', A.speed.toFixed(2)], ['dominant_direction', A.direction]]) +
+    grp('Transport', [['shuttle_count', s.shuttle_count], ['shuttle_capacity', CFG.shuttleCapacity], ['bus_queue', n0(s.bus_queue)], ['shuttle_delay', s.shuttle_delay.toFixed(1) + ' min'], ['vehicle_flow', n0(s.vehicle_flow)]]) +
+    grp('Infrastructure', [['gate_status', s.gate_status], ['emergency_route_open', s.emergency_route_open ? 'TRUE' : 'FALSE'], ['zone_capacity', n0(s.zone_capacity)]]) +
+    grp('Environment', [['temperature', s.temperature.toFixed(1) + ' °C'], ['heat_index', s.heat_index.toFixed(1) + ' °C']]) +
+    grp('Network', [['zone_B_crowd', n0(s.zones.B.crowd)], ['zone_B_density', pct(s.zones.B.density)], ['zone_C_crowd', n0(s.zones.C.crowd)], ['zone_C_density', pct(s.zones.C.density)], ['downstream_risk (B)', r2(s.zoneRisk.B)]]) +
+    grp('Output', [['total_network_risk', r2(s.risk)], ['risk_level', s.level], ['synthetic_label', s.hazard ? 'dangerous' : 'not dangerous']]);
+}
+
+/* ---------------- SCENARIOS ---------------- */
+function renderScen() {
+  $('scenGrid').innerHTML = Object.entries(SCENARIOS).map(([k, sc]) => `<div class="card scen ${live.scenario === k ? 'active' : ''}">
+    <div class="eyebrow">${live.scenario === k ? 'Loaded now' : 'Scenario'}</div><h3>${esc(sc.name)}</h3><p class="muted">${esc(sc.blurb)} ${sc.blurbExtra ? esc(sc.blurbExtra) : ''}</p>
+    <div class="chain">${sc.chain.map(c => `<span>${esc(c)}</span>`).join('<em>→</em>')}</div>
+    <button class="btn ${live.scenario === k ? '' : 'primary'} big" data-scen="${k}">${live.scenario === k ? '↻ Reload this scenario' : 'Load this scenario'}</button></div>`).join('');
+}
+
+/* ---------------- WHAT-IF ---------------- */
+function renderWhatIf() {
+  const s = live, cmp = compareInterventions(s), base = cmp.base;
+  $('wiNow').innerHTML = `
+    <div class="tile ${lv(s.level)}"><div class="eyebrow">Live network · now</div><div class="v" style="color:var(--lv)">${r2(s.risk)}</div><div class="sub">${s.level} · step ${s.t}</div></div>
+    <div class="tile ${lv(levelOf(base.risk))}"><div class="eyebrow">If we do nothing</div><div class="v" style="color:var(--lv)">${r2(base.risk)}</div><div class="sub">${levelOf(base.risk)} · projected in ${CFG.horizon} steps</div></div>
+    <div class="tile"><div class="eyebrow">Short horizon</div><div class="v">${CFG.horizon}<small> steps</small></div><div class="sub">≈${+(CFG.horizon * CFG.stepMinutes).toFixed(1)} simulated minutes</div></div>`;
+  $('ivGrid').innerHTML = Object.entries(INTERVENTIONS).map(([k, iv]) => `<button class="iv ${s.interventions[k] ? 'on' : ''}" data-iv="${k}" aria-pressed="${selectedIv === k}"><b>${esc(iv.name)}</b><small>${s.interventions[k] ? 'Active now' : esc(iv.effect)}</small></button>`).join('');
+  const iv = INTERVENTIONS[selectedIv];
+  if (s.interventions[selectedIv]) {
+    $('baCard').innerHTML = `<h3>2 · Before vs after</h3><p class="note"><b>${esc(iv.name)} is already active.</b> Choose another intervention to compare, or switch it off below.</p>`;
+  } else {
+    const after = project(s, CFG.horizon, selectedIv), bt = base.twin, at = after.twin;
+    const red = redPct(base.risk, after.risk);
+    const la = levelOf(after.risk), lb = levelOf(base.risk);
+    const side = (title, t, risk, l) => `<div class="side ${lv(l)}"><div class="eyebrow">${title}</div>
+      <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap"><div class="risk-num" style="font-size:60px">${r2(risk)}</div><div style="padding-bottom:6px">${pill(l)}</div></div>
+      <dl><dt>${esc(zn('A'))} density</dt><dd>${pct(t.zones.A.density)}</dd><dt>${esc(zn('B'))} density</dt><dd>${pct(t.zones.B.density)}</dd><dt>Mean speed (A)</dt><dd>${t.zones.A.speed.toFixed(2)} m/s</dd><dt>Bus queue</dt><dd>${n0(t.bus_queue)}</dd><dt>Vehicle flow</dt><dd>${n0(t.vehicle_flow)}</dd><dt>Emergency route</dt><dd>${t.emergency_route_open ? 'OPEN' : 'BLOCKED'}</dd></dl></div>`;
+    const rl = red >= 0 ? (la === 'LOW' ? 'LOW' : red > 10 ? 'LOW' : 'MEDIUM') : 'CRITICAL';
+    $('baCard').innerHTML = `<h3>2 · Before vs after</h3>
+      <p class="muted">Current state → ${esc(iv.name)} → simulated future state ${CFG.horizon} steps ahead → new risk. Both sides start from the live state at step ${s.t}.</p>
+      <div class="ba">${side(`Before intervention · do nothing · t+${CFG.horizon}`, bt, base.risk, lb)}
+        <div class="mid"><div class="arrow">→</div><div>${esc(iv.name)}</div><div class="muted small" style="font-weight:400">${esc(iv.effect)}</div></div>
+        ${side(`After intervention · t+${CFG.horizon}`, at, after.risk, la)}</div>
+      <div class="reduction ${lv(rl)}"><div class="eyebrow">${red >= 0 ? 'Risk reduction' : 'Risk increase'}</div><div class="big">${Math.abs(red).toFixed(1)}%</div>
+        <div class="mono small muted">((${r2(base.risk)} − ${r2(after.risk)}) ÷ ${r2(base.risk)}) × 100</div></div>
+      <div class="btn-row"><button class="btn good big" data-approve="${selectedIv}">✓ Approve ${esc(iv.name.toLowerCase())} (operator)</button></div>
+      <p class="muted small">Approving activates it in the live simulation from this step. In a real system this is where an authorised person signs off.</p>`;
+  }
+  const maxR = Math.max(base.risk, ...cmp.rows.map(r => r.risk), 0.01);
+  $('rank').innerHTML = [{ key: null, risk: base.risk, reduction: 0 }].concat(cmp.rows).sort((a, b) => a.risk - b.risk).map((r, i) => {
+    const l = levelOf(r.risk);
+    return `<div class="rank-row ${lv(l)}"><span class="n">${i + 1}</span><b>${r.key ? esc(INTERVENTIONS[r.key].name) : 'Do nothing'}</b><div class="track"><div class="fill" style="width:${(r.risk / maxR * 100).toFixed(1)}%"></div></div><span class="mono" style="text-align:right"><b>${r2(r.risk)}</b><br><small class="muted">${r.key ? (redPct(base.risk, r.risk) >= 0 ? '−' : '+') + Math.abs(redPct(base.risk, r.risk)).toFixed(1) + '%' : 'baseline'}</small></span></div>`;
+  }).join('') || '<p class="muted">All interventions are already active.</p>';
+  $('recSlotWhatif').innerHTML = recHTML();
+  const act = Object.keys(s.interventions).filter(k => s.interventions[k]);
+  $('activeCard').innerHTML = `<h3>Active interventions</h3>${act.length ? `<div class="btn-row">${act.map(k => `<button class="btn" data-stop="${k}">Switch off ${esc(INTERVENTIONS[k].name.toLowerCase())}</button>`).join('')}</div>` : '<p class="muted">None. The live simulation is running without interventions.</p>'}
+    ${s.log.length ? `<div class="tbl-wrap"><table><thead><tr><th>Step</th><th>Approved intervention</th><th class="num">Projected risk without</th><th class="num">Projected risk with</th></tr></thead><tbody>${s.log.map(l => `<tr><td class="mono">t=${l.t}</td><td>${esc(INTERVENTIONS[l.key].name)}</td><td class="num">${r2(l.before)}</td><td class="num">${l.after == null ? '–' : r2(l.after)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+}
+
+/* ---------------- RESULTS ---------------- */
+function renderResults() {
+  const s = live, H = s.history;
+  $('resTitle').textContent = s.t >= CFG.steps ? 'Simulation complete' : `Results so far · t = ${s.t} / ${CFG.steps}`;
+  if (!s.t) { $('resBody').innerHTML = `<div class="card"><h3>No steps run yet</h3><p class="muted">Play the simulation, or run all ${CFG.steps} steps at once.</p><div class="btn-row"><button class="btn primary big" data-run>Run ${CFG.steps} steps now</button></div></div>`; return; }
+  const twinPath = counterfactual(s);
+  const pk = peakOf(H), pkLevel = levelOf(pk.v);
+  const peakCrowd = H.reduce((a, b) => b.crowdA > a.crowdA ? b : a);
+  const maxD = Math.max(...H.map(h => Math.max(h.dA, h.dB, h.dC)));
+  const hazLive = H.filter(h => h.hazard).length;
+  const c2 = newState(s.scenario, s.seed); c2.failures = { ...s.failures }; refresh(c2); let hazTwin = 0;
+  for (let i = 0; i < s.t; i++) { step(c2); if (c2.hazard) hazTwin++; }
+  const first = s.log[0];
+  const before = first ? (H.find(h => h.t === first.t) || { risk: first.riskNow }).risk : null;
+  const finalLive = s.risk, finalTwin = twinPath[twinPath.length - 1], twinPeak = Math.max(...twinPath);
+  const redFinal = redPct(finalTwin, finalLive);
+  const redPeak = redPct(twinPeak, pk.v);
+  const tile = (k, v, sub, cls = '') => `<div class="tile ${cls}"><div class="eyebrow">${k}</div><div class="v" ${cls ? 'style="color:var(--lv)"' : ''}>${v}</div><div class="sub">${sub}</div></div>`;
+  $('resBody').innerHTML = `
+    ${s.t < CFG.steps ? `<div class="btn-row"><button class="btn primary big" data-run>Run remaining ${CFG.steps - s.t} steps</button></div>` : ''}
+    <div class="tiles">
+      ${tile('Peak risk', r2(pk.v), `${pkLevel} at t=${pk.t}`, lv(pkLevel))}
+      ${tile('Peak crowd · ' + esc(zn('A')), n0(peakCrowd.crowdA), `at t=${peakCrowd.t}`)}
+      ${tile('Maximum density', pct(maxD), 'any zone')}
+      ${tile('Total alerts', s.alerts.length, 'generated from state')}
+      ${tile('Interventions applied', s.log.length, s.log.length ? s.log.map(l => `${INTERVENTIONS[l.key].short} (t=${l.t})`).join(', ') : 'none')}
+      ${tile('Steps labelled dangerous', `${hazLive}<small> vs ${hazTwin}</small>`, 'this run vs no-intervention twin (synthetic label)')}
+    </div>
+    <div class="card"><h3>Before vs after</h3>
+      <div class="tiles">
+        ${tile('Risk before intervention', before == null ? '–' : r2(before), first ? `at t=${first.t}, when ${INTERVENTIONS[first.key].short.toLowerCase()} was approved` : 'no intervention approved', before == null ? '' : lv(levelOf(before)))}
+        ${tile('Risk now, with intervention', r2(finalLive), `${s.level} at t=${s.t}`, lv(s.level))}
+        ${tile('Same step, no intervention', r2(finalTwin), `${levelOf(finalTwin)} · counterfactual twin`, lv(levelOf(finalTwin)))}
+      </div>
+      ${s.log.length ? `<div class="reduction ${lv(redFinal > 0 ? 'LOW' : 'MEDIUM')}"><div class="eyebrow">Risk reduction vs twin</div><div class="big">${redFinal.toFixed(1)}%</div><div class="mono small muted">((${r2(finalTwin)} − ${r2(finalLive)}) ÷ ${r2(finalTwin)}) × 100 · peak ${r2(twinPeak)} → ${r2(pk.v)} (${redPeak.toFixed(1)}% lower)</div></div>` : '<p class="note"><b>No intervention approved yet.</b> Approve one on the What-if page to see a before vs after comparison.</p>'}
+    </div>
+    <div class="card"><h3>Complete risk curve</h3><div class="chart">${chartSVG({
+      series: [{ pts: twinPath.map((v, i) => ({ t: i + 1, v })), color: 'var(--ink-3)', dash: '7 6', w: 2.5 }, { pts: H.map(h => ({ t: h.t, v: h.risk })), color: 'var(--ink)', area: true }],
+      markers: markersOf(s), hazard: H.filter(h => h.hazard).map(h => h.t), peak: pk
+    })}<div class="chart-legend"><span><i></i>This run</span><span><i style="background:var(--ink-3)"></i>Twin without interventions (dashed)</span><span><i style="background:var(--brand);height:12px;width:3px"></i>Approved intervention</span><span><i style="background:var(--crit);opacity:.25;height:12px"></i>Synthetic “dangerous” label</span></div></div></div>`;
+}
+
+/* ---------------- LABELS + HORIZON ---------------- */
+function csvText() {
+  const rows = live.history.map(h => ({ ...h.row, operator_label: live.labels[h.t] || '' }));
+  if (!rows.length) return '';
+  const cols = Object.keys(rows[0]);
+  return [cols.join(',')].concat(rows.map(r => cols.map(c => String(r[c]).includes(',') ? `"${r[c]}"` : r[c]).join(','))).join('\n');
+}
+function renderLabels() {
+  const s = live, L = Object.entries(s.labels).map(([t, v]) => ({ t: +t, v, h: s.history.find(x => x.t === +t) })).filter(x => x.h).sort((a, b) => a.t - b.t);
+  const agree = L.filter(x => (x.v === 'dangerous') === x.h.hazard).length;
+  const nd = L.filter(x => x.v === 'dangerous').length;
+  $('labCard').innerHTML = `<h3>1 · Label situations as they happen</h3>
+    <p class="muted">Label the current step here or on the Live monitor. Each label is stored with the anonymous state at that step, in the dataset schema from the MIIQAT-AI repository.</p>
+    <div class="card" style="box-shadow:none;background:var(--surface-2)">${labelHTML()}</div>
+    <div class="tiles">
+      <div class="tile"><div class="eyebrow">Labelled steps</div><div class="v">${L.length}</div><div class="sub">${nd} dangerous · ${L.length - nd} not dangerous</div></div>
+      <div class="tile"><div class="eyebrow">Agreement with synthetic rule</div><div class="v">${L.length ? pct(agree / L.length) : '–'}</div><div class="sub">Rule: density ≥ ${pct(CFG.hazardRule.density)} and speed ≤ ${CFG.hazardRule.speed} m/s</div></div>
+      <div class="tile"><div class="eyebrow">Steps in dataset</div><div class="v">${s.history.length}</div><div class="sub">one row per step (Zone A)</div></div>
+    </div>
+    ${L.length ? `<div class="tbl-wrap"><table><thead><tr><th>Step</th><th>Sim clock</th><th class="num">Risk</th><th>Level</th><th>Operator label</th><th>Synthetic rule</th></tr></thead><tbody>${L.map(x => `<tr><td class="mono">t=${x.t}</td><td class="mono">${clock(x.t)}</td><td class="num">${r2(x.h.risk)}</td><td>${x.h.level}</td><td><b>${x.v === 'dangerous' ? '⚠ dangerous' : '✓ not dangerous'}</b></td><td>${x.h.hazard ? 'dangerous' : 'not dangerous'}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    <div class="btn-row"><button class="btn primary" id="copyCsv" ${s.history.length ? '' : 'disabled'}>Copy dataset as CSV</button><button class="btn bad" id="clearLabels" ${L.length ? '' : 'disabled'}>Clear my labels</button></div>
+    <textarea id="csvBox" readonly hidden style="width:100%;min-height:160px;font-family:var(--f-mono);font-size:12px;padding:12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)"></textarea>`;
+  const hr = horizonResult;
+  const bestH = hr && hr.best ? hr.best.h : null;
+  $('horCard').innerHTML = `<h3>2 · Choose the forecast horizon by experiment</h3>
+    <p>How far ahead can the system warn that a situation will become dangerous, and still be right often enough? For each horizon from 1 to 12 steps, a simple trend forecaster looks at a situation that is <i>not</i> dangerous yet and predicts whether it will be labelled dangerous that many steps later. It is scored across all ${Object.keys(SCENARIOS).length} scenarios × 12 seeds. The horizon with the best F1 score wins.</p>
+    <p class="muted small">Prediction = forecast risk ≥ ${CFG.alarmThreshold.toFixed(2)}. Truth = synthetic “dangerous” label (density ≥ ${pct(CFG.hazardRule.density)} and speed ≤ ${CFG.hazardRule.speed} m/s in Zone A or B). With real data, operator and incident-review labels replace the synthetic rule and the same test runs unchanged.</p>
+    <div class="btn-row"><button class="btn primary big" id="runHorizon">${hr ? '↻ Run the horizon test again' : 'Run the horizon test'}</button></div>
+    ${hr ? `<div class="tbl-wrap"><table><thead><tr><th>Horizon</th><th class="num">≈ minutes</th><th class="num">Precision</th><th class="num">Recall</th><th>F1</th><th class="num">Risk error (MAE)</th></tr></thead><tbody>
+      ${hr.rows.map(r => `<tr class="${r.h === bestH ? 'pick' : ''}"><td class="mono"><b>h = ${r.h}</b>${r.h === bestH ? ' ← best' : ''}${r.h === CFG.horizon ? ' · in use' : ''}</td><td class="num">${+(r.h * CFG.stepMinutes).toFixed(1)}</td><td class="num">${pct(r.precision)}</td><td class="num">${pct(r.recall)}</td>
+      <td style="min-width:180px"><div style="display:flex;gap:10px;align-items:center"><div class="track" style="flex:1"><div class="fill" style="width:${(r.f1 * 100).toFixed(1)}%;background:${r.h === bestH ? 'var(--brand)' : 'var(--ink-3)'}"></div></div><span class="mono">${r.f1.toFixed(2)}</span></div></td><td class="num">${r.mae.toFixed(3)}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="reduction lvl-LOW" style="--lv:var(--brand);--lvs:var(--brand-soft)"><div class="eyebrow">Best horizon in this synthetic test</div><div class="big">h = ${bestH}</div><div>≈${+(bestH * CFG.stepMinutes).toFixed(1)} simulated minutes · F1 ${hr.best.f1.toFixed(2)} · ${hr.runs} runs</div></div>
+      <div class="btn-row"><button class="btn good big" id="useHorizon" ${bestH === CFG.horizon ? 'disabled' : ''}>${bestH === CFG.horizon ? `h = ${bestH} is already in use` : `Use h = ${bestH} as the forecast horizon`}</button></div>
+      <p class="muted small">This number describes the synthetic simulator only. It is a method to repeat on real labelled data, not a claim about real crowds.</p>` : ''}`;
+}
+
+/* ---------------- PRIVACY ---------------- */
+const ALLOWED = new Set(['timestamp', 'zones', 'zone_id', 'capacity', 'crowd_count', 'density', 'inflow', 'outflow', 'mean_speed', 'dominant_direction', 'transport', 'bus_queue', 'shuttle_delay', 'vehicle_flow', 'infrastructure', 'gate_status', 'emergency_route_open', 'environment', 'heat_index', 'sensors', 'camera_confidence', 'gps_confidence', 'gate_confidence', 'privacy', 'faces_retained', 'plates_retained', 'individual_trajectories_retained', 'raw_frames_retained']);
+const IDENTITY = /face|plate|name|image|frame_id|img|track_id|person|device|phone|passport|mac_addr/i;
+function payload() {
+  const s = live;
+  return {
+    timestamp: s.t,
+    zones: ['A', 'B', 'C'].map(z => ({ zone_id: z, capacity: Math.round(z === 'A' ? s.effCapA : s.zones[z].capacity), crowd_count: Math.round(s.zones[z].crowd), density: +s.zones[z].density.toFixed(3), inflow: +s.zones[z].inflow.toFixed(1), outflow: +s.zones[z].outflow.toFixed(1), mean_speed: +s.zones[z].speed.toFixed(2), dominant_direction: s.zones[z].direction })),
+    transport: { bus_queue: Math.round(s.bus_queue), shuttle_delay: +s.shuttle_delay.toFixed(1), vehicle_flow: Math.round(s.vehicle_flow) },
+    infrastructure: { gate_status: s.gate_status, emergency_route_open: s.emergency_route_open },
+    environment: { heat_index: +s.heat_index.toFixed(1) },
+    sensors: { camera_confidence: +s.sensors.camera.conf.toFixed(2), gps_confidence: +s.sensors.gps.conf.toFixed(2), gate_confidence: +s.sensors.gate.conf.toFixed(2) },
+    privacy: { faces_retained: 0, plates_retained: 0, individual_trajectories_retained: 0, raw_frames_retained: 0 }
+  };
+}
+function keysOf(o, out = []) { if (Array.isArray(o)) o.forEach(x => keysOf(x, out)); else if (o && typeof o === 'object') for (const k in o) { out.push(k); keysOf(o[k], out); } return out; }
+function runAudit(p, planted) {
+  const keys = keysOf(p), bad = [...new Set(keys.filter(k => !ALLOWED.has(k)))], ident = [...new Set(keys.filter(k => IDENTITY.test(k) && !ALLOWED.has(k)))];
+  const checks = [
+    ['Faces retained', p.privacy.faces_retained === 0, String(p.privacy.faces_retained)],
+    ['License plates retained', p.privacy.plates_retained === 0, String(p.privacy.plates_retained)],
+    ['Persistent individual trajectories retained', p.privacy.individual_trajectories_retained === 0, String(p.privacy.individual_trajectories_retained)],
+    ['Raw video frames retained', p.privacy.raw_frames_retained === 0, String(p.privacy.raw_frames_retained)],
+    ['Every output field is on the aggregate allow-list', bad.length === 0, bad.length ? 'not allowed: ' + bad.join(', ') : `${new Set(keys).size} fields checked`],
+    ['No identity-like field names', ident.length === 0, ident.length ? ident.join(', ') : 'none found']
+  ];
+  return { pass: checks.every(c => c[1]), checks, t: live.t, planted };
+}
+function renderPrivacy() {
+  const s = live, u = s.comp.uncertainty, ul = u < 0.15 ? 'LOW' : u < 0.5 ? 'MEDIUM' : 'HIGH';
+  $('modeTiles').innerHTML = `
+    <div class="tile ${lv(s.degraded ? 'HIGH' : 'LOW')}"><div class="eyebrow">System mode</div><div class="v" style="color:var(--lv)">${s.degraded ? 'DEGRADED' : 'NORMAL'}</div><div class="sub">${s.degraded ? 'Running on the remaining signals' : 'All sensors reporting'}</div></div>
+    <div class="tile ${lv(ul)}"><div class="eyebrow">Risk uncertainty</div><div class="v" style="color:var(--lv)">${ul === 'MEDIUM' ? 'MODERATE' : ul}</div><div class="sub">Adds ${(u * CFG.weights.uncertainty).toFixed(3)} to network risk</div></div>
+    <div class="tile ${lastAudit ? lv(lastAudit.pass ? 'LOW' : 'CRITICAL') : ''}"><div class="eyebrow">Privacy status</div><div class="v" ${lastAudit ? 'style="color:var(--lv)"' : ''}>${lastAudit ? (lastAudit.pass ? '✓ PASS' : '✕ FAIL') : 'Not audited'}</div><div class="sub">${lastAudit ? 'Audit at step ' + lastAudit.t : 'Run the audit below'}</div></div>`;
+  const fallback = { camera: 'Density estimated from gate counters', gps: 'Shuttle positions taken from the timetable', gate: 'Counts estimated from camera density', weather: '' };
+  $('sensors').innerHTML = Object.entries(s.sensors).map(([k, x]) => `<div class="tile sensor ${lv(x.online ? 'LOW' : 'CRITICAL')}"><div class="eyebrow">${esc(x.name)}</div>
+    <div class="state" style="color:var(--lv)"><span class="dot" style="background:var(--lv)"></span>${x.online ? 'ONLINE' : 'UNAVAILABLE'}</div>
+    <div class="v">${pct(x.conf)}<small> confidence</small></div><div class="sub">${x.online ? 'Aggregate signal only' : esc(fallback[k])}</div></div>`).join('');
+  document.querySelectorAll('[data-fail]').forEach(b => { const on = s.failures[b.dataset.fail]; b.setAttribute('aria-pressed', on); b.textContent = (on ? '↺ Repair ' : '') + { camera: 'Camera failure', gps: 'GPS failure', gate: 'Gate sensor failure' }[b.dataset.fail]; });
+  const a = lastAudit;
+  $('auditCard').innerHTML = `<h3>Privacy compliance audit</h3>
+    <p class="muted">Checks the exact payload leaving the privacy gate against an allow-list of aggregate fields. Only aggregate movement signals are passed to the network-level risk engine.</p>
+    <div class="btn-row"><button class="btn primary big" id="auditBtn">Run privacy compliance audit</button><button class="btn big" id="plantBtn">Test the audit: plant an identity field</button></div>
+    ${a ? `<div class="reduction ${lv(a.pass ? 'LOW' : 'CRITICAL')}"><div class="eyebrow">Result · step ${a.t}${a.planted ? ' · planted test' : ''}</div><div class="big">${a.pass ? '✓ PASS' : '✕ FAIL'}</div><div>${a.planted ? (a.pass ? 'The planted field was not caught.' : `The audit caught the planted field <b class="mono">${esc(a.planted)}</b> and blocked the payload.`) : (a.pass ? 'Only aggregate fields leave the gate.' : '')}</div></div>
+    <ul class="checks">${a.checks.map(([k, ok, d]) => `<li><span class="${ok ? 'ok' : 'no'}">${ok ? '✓' : '✕'}</span><span>${esc(k)}</span><span class="mono small muted">${esc(d)}</span></li>`).join('')}</ul>` : ''}`;
+  $('payload').textContent = JSON.stringify(payload(), null, 2);
+}
+
+/* ---------------- HOW ---------------- */
+function renderHow() {
+  const W = CFG.weights;
+  $('formula').innerHTML = `<p class="mono" style="font-size:15px;line-height:2">network risk = ${Object.keys(W).map(k => `<b>${W[k].toFixed(2)}</b> × ${COMP[k][0].toLowerCase()}`).join(' + ')} + capacity-exceeded penalty (up to 0.10), clamped to [0, 1]</p>
+    <p class="muted">Each input is normalised to 0–1 before weighting. Weights sum to ${Object.values(W).reduce((a, b) => a + b, 0).toFixed(2)} and can be changed in Settings.</p>
+    <div class="btn-row">${LEVELS.map(l => pill(l, ` · ${l === 'LOW' ? '0.00' : CFG.thresholds[l.toLowerCase()].toFixed(2)}+`)).join('')}</div>
+    <p class="muted small">HIGH is reported as “elevated crowd-safety risk”; CRITICAL as “hazardous crowd state”.</p>`;
+}
+
+/* ---------------- SETTINGS ---------------- */
+const FIELDS = [
+  ['Simulation', [['seed', 'Random seed', 'Same seed, same run', 1], ['steps', 'Steps per run', '', 1], ['stepMinutes', 'Minutes per step', 'Simulated time per step', 0.5], ['playSpeedMs', 'Play speed', 'Milliseconds per step; lower is faster', 50], ['shuttleCapacity', 'Shuttle capacity', 'Passengers per bus', 1]]],
+  ['Forecast', [['horizon', 'Forecast horizon', 'Steps ahead; set it from the horizon test', 1], ['alarmThreshold', 'Horizon-test warning level', 'Forecast risk that counts as a warning', 0.01]]],
+  ['Risk levels', [['thresholds.medium', 'MEDIUM starts at', '', 0.01], ['thresholds.high', 'HIGH starts at', 'Elevated crowd-safety risk', 0.01], ['thresholds.critical', 'CRITICAL starts at', 'Hazardous crowd state', 0.01]]],
+  ['Risk weights', Object.keys(DEFAULTS.weights).map(k => ['weights.' + k, COMP[k][0], COMP[k][1], 0.01])],
+  ['Zones', ['A', 'B', 'C'].flatMap(z => [['zones.' + z + '.name', `Zone ${z} name`, '', 'text'], ['zones.' + z + '.capacity', `Zone ${z} capacity`, 'people', 10]])],
+  ['“Dangerous” label rule (synthetic)', [['hazardRule.density', 'Density at or above', '1.00 = full capacity', 0.01], ['hazardRule.speed', 'Speed at or below', 'metres per second', 0.01]]]
+];
+const getP = (o, p) => p.split('.').reduce((a, k) => a[k], o);
+const setP = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
+let settingsBuilt = false;
+function renderSettingsOnce() { if (!settingsBuilt) buildSettings(); }
+function buildSettings() {
+  settingsBuilt = true;
+  $('setForm').innerHTML = FIELDS.map(([g, fs]) => `<div class="card"><h3>${esc(g)}</h3>${g === 'Risk weights' ? '<p class="muted small" id="wsum"></p>' : ''}<div class="form-grid">${fs.map(([p, lab, hint, stepv]) => {
+    const id = 'set-' + p.replace(/\./g, '-'), v = getP(CFG, p);
+    return `<label class="f" for="${id}">${esc(lab)}${hint ? `<small>${esc(hint)}</small>` : ''}${stepv === 'text' ? `<input type="text" id="${id}" data-path="${p}" value="${esc(v)}">` : `<input type="number" id="${id}" data-path="${p}" step="${stepv}" value="${v}">`}</label>`;
+  }).join('')}</div></div>`).join('') +
+    `<p id="setErr" class="note" hidden></p><div class="btn-row"><button type="submit" class="btn primary big">Save and restart simulation</button><button type="button" class="btn big" id="defaultsBtn">Restore defaults</button></div>`;
+  updWsum();
+}
+function updWsum() { const el = $('wsum'); if (!el) return; let t = 0; document.querySelectorAll('[data-path^="weights."]').forEach(i => t += +i.value || 0); el.textContent = `Weights add up to ${t.toFixed(2)}. Keep them near 1.00 so the score stays within 0–1.`; }
+function saveSettings(e) {
+  e.preventDefault();
+  const next = deep(CFG);
+  document.querySelectorAll('#setForm [data-path]').forEach(i => setP(next, i.dataset.path, i.type === 'number' ? +i.value : i.value.trim() || getP(DEFAULTS, i.dataset.path)));
+  const th = next.thresholds, err = $('setErr');
+  const bad = !(th.medium > 0 && th.medium < th.high && th.high < th.critical && th.critical <= 1) ? 'Risk levels must go up: MEDIUM < HIGH < CRITICAL ≤ 1.'
+    : next.steps < 5 || next.steps > 500 ? 'Steps per run must be between 5 and 500.'
+      : next.horizon < 1 || next.horizon > 30 ? 'Forecast horizon must be between 1 and 30 steps.'
+        : next.playSpeedMs < 50 ? 'Play speed must be at least 50 ms.' : '';
+  if (bad) { err.innerHTML = '<b>Not saved.</b> ' + esc(bad); err.hidden = false; return; }
+  err.hidden = true;
+  next.steps = Math.round(next.steps); next.horizon = Math.round(next.horizon);
+  CFG = next; store.set('miqaat.cfg', CFG); horizonResult = null;
+  resetSim(CFG.scenario); toast('Saved. Simulation restarted with the new settings.');
+}
+
+/* ---------------- EDIT TEXT ---------------- */
+const originals = {};
+document.querySelectorAll('[data-edit]').forEach(el => { originals[el.dataset.edit] = el.innerHTML; });
+const edits = store.get('miqaat.text') || {};
+function applyEdits() { document.querySelectorAll('[data-edit]').forEach(el => { if (edits[el.dataset.edit] != null) el.innerText = edits[el.dataset.edit]; }); }
+function toggleEdit() {
+  const on = !document.body.classList.contains('editing');
+  document.body.classList.toggle('editing', on);
+  document.querySelectorAll('[data-edit]').forEach(el => { if (on) el.setAttribute('contenteditable', 'true'); else el.removeAttribute('contenteditable'); });
+  ['editBtn', 'editBtn2'].forEach(id => { $(id).setAttribute('aria-pressed', on); $(id).textContent = on ? '✓ Done editing' : '✎ Edit text'; });
+  $('editHint').hidden = !on;
+  if (!on) toast('Text saved in this browser.');
+}
+on(document, 'input', e => { const el = e.target.closest && e.target.closest('[data-edit]'); if (el && document.body.classList.contains('editing')) { edits[el.dataset.edit] = el.innerText; store.set('miqaat.text', edits); } if (e.target.matches && e.target.matches('[data-path^="weights."]')) updWsum(); });
+
+/* ---------------- DEMO MODE ---------------- */
+const fcRisk = () => project(live, CFG.horizon, null).risk;
+const DEMO = [
+  { text: () => 'Phase 1 of 11 · Normal flow. Pilgrim arrivals are steady and network risk is LOW.', page: 'live', enter() { loadScenario('rising', true); play(); }, until: () => live.t >= 10 },
+  { text: () => 'Phase 2 · Inflow begins increasing at the corridor entrance.', page: 'live', until: () => live.zones.A.density >= 0.62 || live.t >= 24 },
+  { text: () => 'Phase 3 · Crowd density rises and walking speed falls. The dots pack tighter and slow down.', page: 'map', until: () => live.zones.A.density >= 0.72 || live.t >= 28 },
+  { text: () => 'Phase 4 · The shuttle queue starts to build at the interchange.', page: 'map', until: () => live.bus_queue >= 4 || live.t >= 31 },
+  { text: () => 'Phase 5 · Pedestrian–vehicle interaction rises. The explanation shows which inputs drive the score.', page: 'why', until: () => !!live.pending || live.risk >= CFG.thresholds.high || live.t >= 45 },
+  { text: () => `Phase 6 · The short-horizon forecast reaches ${levelOf(fcRisk())} (${r2(fcRisk())} in ${CFG.horizon} steps) while current risk is ${live.level}: elevated crowd-safety risk ahead.`, page: 'live', enter() { pause(); }, wait: 5500 },
+  { text: () => 'Phase 7 · The system recommends an intervention and waits for a human decision.', page: 'live', wait: 5000 },
+  { text: () => `Phase 8 · The operator reviews the top-ranked option: ${INTERVENTIONS[demo.key].name}.`, page: 'whatif', enter() { demo.key = (live.pending || {}).key || compareInterventions(live).rows[0].key; selectedIv = demo.key; }, wait: 5000 },
+  { text: () => 'Phase 9 · What-if simulation: the intervention runs on a cloned twin and is compared with doing nothing.', page: 'whatif', enter() { setTimeout(() => $('baCard').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }), 60); }, wait: 7000 },
+  { text: () => 'Phase 10 · The operator approves. The intervention is activated in the simulation and risk falls.', page: 'live', enter() { approve(demo.key); play(); }, until: () => live.t >= CFG.steps },
+  { text: () => 'Phase 11 · Before vs after, against a twin with no intervention. Demo complete.', page: 'results' }
+];
+function demoEnter(i) {
+  demo.i = i; demo.clock = 0; const ph = DEMO[i];
+  if (ph.page) go(ph.page);
+  ph.enter && ph.enter();
+  if (ph.page) render();
+  demoBanner();
+}
+function demoBanner() {
+  $('demoBanner').hidden = !demo; if (!demo) return;
+  $('demoText').textContent = DEMO[demo.i].text();
+  $('demoPause').textContent = demo.paused ? '▶ Resume demo' : '⏸ Pause demo';
+  $('demoPause').hidden = demo.i === DEMO.length - 1;
+}
+function startDemo() { stopDemo(); demo = { i: 0, clock: 0, paused: false, key: 'reroute' }; demo.timer = setInterval(demoTick, 250); demoEnter(0); }
+function demoTick() {
+  if (!demo || demo.paused) return;
+  const ph = DEMO[demo.i]; demo.clock += 250;
+  if (demo.i < DEMO.length - 1 && ((ph.until && ph.until()) || (ph.wait && demo.clock >= ph.wait))) demoEnter(demo.i + 1);
+  else if (demo.i === 5) demoBanner();
+}
+function toggleDemoPause() {
+  if (!demo) return; demo.paused = !demo.paused;
+  if (demo.paused) { demo.wasPlaying = !!playing; pause(); } else if (demo.wasPlaying) play();
+  demoBanner();
+}
+function stopDemo() { if (demo) { clearInterval(demo.timer); demo = null; pause(); } demoBanner(); }
+
+/* ---------------- events ---------------- */
+on(document, 'click', e => {
+  const b = e.target.closest('button, [data-zone]'); if (!b) return;
+  const d = b.dataset;
+  if (d.go) { go(d.go); return; }
+  if ('demo' in d || b.id === 'demoBtn') { startDemo(); return; }
+  if (d.zone) { selectedZone = d.zone; renderMap(); return; }
+  if (d.scen) { loadScenario(d.scen); return; }
+  if (d.iv) { selectedIv = d.iv; renderWhatIf(); return; }
+  if (d.approve) { approve(d.approve); toast('Operator approved. Intervention active in the simulation.'); return; }
+  if (d.stop) { stopIv(d.stop); return; }
+  if (d.rec) { if (d.rec === 'approve' && live.pending) { approve(live.pending.key); } else if (d.rec === 'dismiss') dismiss(); else if (d.rec === 'review' && live.pending) { selectedIv = live.pending.key; go('whatif'); } return; }
+  if (d.label) { if (live.t) { live.labels[live.t] = d.label; render(); toast(d.label === 'dangerous' ? `Step ${live.t} labelled: this situation was dangerous.` : `Step ${live.t} labelled: not dangerous.`); } return; }
+  if (d.fail) { const k = d.fail; live.failures[k] = !live.failures[k]; refresh(live); addAlert('SENSOR', `${live.sensors[k].name}: ${live.failures[k] ? 'failure, switching to fallback. Uncertainty increased.' : 'restored.'}`, live.failures[k] ? 'HIGH' : 'LOW'); render(); return; }
+  if ('run' in d) { runAll(); return; }
+  switch (b.id) {
+    case 'playBtn': playing ? pause() : play(); break;
+    case 'stepBtn': pause(); if (!liveStep()) toast('Run finished. Press Reset to start again.'); render(); break;
+    case 'runBtn': runAll(); toast(`Ran to step ${CFG.steps}.`); break;
+    case 'resetBtn': stopDemo(); resetSim(); toast('Reset to step 0.'); break;
+    case 'editBtn': case 'editBtn2': toggleEdit(); break;
+    case 'resetText': for (const k in edits) delete edits[k]; store.del('miqaat.text'); document.querySelectorAll('[data-edit]').forEach(el => el.innerHTML = originals[el.dataset.edit]); toast('Text restored.'); break;
+    case 'demoPause': toggleDemoPause(); break;
+    case 'demoStop': stopDemo(); toast('Demo stopped.'); break;
+    case 'restoreBtn': live.failures = { camera: false, gps: false, gate: false }; refresh(live); addAlert('SENSOR', 'All sensors restored.', 'LOW'); render(); break;
+    case 'auditBtn': lastAudit = runAudit(payload()); render(); break;
+    case 'plantBtn': { const p = payload(); p.zones[0].face_crop_id = 'cam3_frame_0412.jpg'; lastAudit = runAudit(p, 'face_crop_id'); render(); break; }
+    case 'runHorizon': b.textContent = 'Running…'; b.disabled = true; setTimeout(() => { horizonResult = horizonExperiment(); render(); }, 30); break;
+    case 'useHorizon': if (horizonResult) { CFG.horizon = horizonResult.best.h; store.set('miqaat.cfg', CFG); settingsBuilt = false; toast(`Forecast horizon set to ${CFG.horizon} steps.`); render(); } break;
+    case 'copyCsv': { const txt = csvText(), box = $('csvBox'); box.value = txt; box.hidden = false; const done = () => toast('Dataset copied as CSV.'); try { navigator.clipboard.writeText(txt).then(done, () => { box.select(); toast('Select-all is ready; press Ctrl/Cmd+C to copy.'); }); } catch (err) { box.select(); } break; }
+    case 'clearLabels': live.labels = {}; render(); break;
+    case 'defaultsBtn': CFG = deep(DEFAULTS); store.del('miqaat.cfg'); settingsBuilt = false; buildSettings(); horizonResult = null; resetSim(CFG.scenario); toast('Defaults restored.'); break;
+  }
+});
+on(document, 'keydown', e => { const z = e.target.closest && e.target.closest('g[data-zone]'); if (z && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectedZone = z.dataset.zone; renderMap(); } });
+on(document, 'submit', e => { if (e.target.id === 'setForm') saveSettings(e); });
+
+/* ---------------- boot ---------------- */
+buildNav(); applyEdits();
+let startPage = 'start';
+try { startPage = (location.hash || '#start').slice(1); } catch (e) { }
+go(startPage, true);
+const bootMsg = $('bootMsg'); if (bootMsg) bootMsg.hidden = true;
+// Clean shutdown so a re-run of this script never doubles clicks or timers
+window.__miqaatTeardown = () => {
+  LISTENERS.forEach(([t, type, fn]) => t.removeEventListener(type, fn));
+  clearInterval(playing); if (demo) clearInterval(demo.timer);
+  if (twin.raf) cancelAnimationFrame(twin.raf); clearTimeout(toast.t);
+};
+// Read-only handle used by the automated QA script
+window.__miqaat = {
+  get live() { return live; }, get CFG() { return CFG; }, get page() { return page; }, get demo() { return demo; }, get horizonResult() { return horizonResult; },
+  PAGES, go, project, counterfactual, computeRisk, compareInterventions, levelOf
+};
+
+})();
+</script>
+
+</body>
+</html>
