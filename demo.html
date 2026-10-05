@@ -253,6 +253,23 @@ input[type=number],input[type=text],select{font:inherit;font-size:17px;padding:1
 /* edit mode */
 body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;border-radius:4px;cursor:text}
 .edit-hint{background:var(--brand);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:15px}
+/* data-source chips */
+.src{display:inline-block;align-self:flex-start;font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;vertical-align:middle;margin-left:4px}
+.tile .src{margin-left:0;margin-top:4px}
+.src-real{background:var(--low-soft);color:var(--low);border:1px solid var(--low)}
+.src-synthetic{background:var(--surface-2);color:var(--ink-3);border:1px dashed var(--line-2)}
+.src-mixed{background:var(--med-soft);color:var(--med);border:1px solid var(--med)}
+.scen-src{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;font-size:14px}
+.scen-src dd{margin:0}
+/* detection */
+.det-stage{position:relative;background:#0B0F0C;border-radius:var(--r);overflow:hidden;min-height:220px;display:flex;align-items:center;justify-content:center}
+.det-stage canvas{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain}
+.det-empty{color:#C9D1CB;font-size:17px;padding:48px 24px;text-align:center;max-width:46ch}
+.det-video{position:absolute;width:2px;height:2px;opacity:0;pointer-events:none;left:0;top:0}
+#detStatus.err{color:var(--crit);font-weight:600}
+.det-controls{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+.det-controls label.f{flex-direction:row;align-items:center;gap:12px}
+.det-controls input[type=range]{width:180px;accent-color:var(--brand)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* phones (QR-code visitors) */
 @media (max-width:640px){
@@ -287,7 +304,7 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
     <div class="head-right">
       <div class="status">
         <b><span class="dot pulse" id="statusDot"></span><span id="statusText">SIMULATION ONLINE</span></b>
-        <span class="muted">Synthetic data · Demonstration only</span>
+        <span class="muted">HAJJv2 readings + synthetic transport · Demo only</span>
       </div>
       <button class="btn" id="editBtn" aria-pressed="false">✎ Edit text</button>
       <button class="btn brand" id="demoBtn">▶ Demo mode</button>
@@ -307,7 +324,7 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
     <div class="sim-ctrl">
       <button class="btn primary" id="playBtn">▶ Play</button>
       <button class="btn" id="stepBtn">Step forward</button>
-      <button class="btn" id="runBtn">Run 60 steps</button>
+      <button class="btn" id="runBtn">Run to end</button>
       <button class="btn" id="resetBtn">↻ Reset</button>
     </div>
   </div>
@@ -325,7 +342,7 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
     <div class="hero">
       <div class="eyebrow" data-edit="start.eyebrow">Research &amp; demonstration prototype</div>
       <h2 data-edit="start.h">Predicting dangerous crowd–traffic interactions before they become operationally critical.</h2>
-      <p class="tagline" data-edit="start.tag">MIIQAT AI reads anonymous movement signals from pilgrims, shuttles, gates and weather, forecasts network risk a short horizon ahead, and tests interventions on a digital twin before a human approves them.</p>
+      <p class="tagline" data-edit="start.tag">MIIQAT AI reads anonymous crowd readings, forecasts network risk a few seconds ahead, and tests interventions on a digital twin before a human approves them. Here, the crowd side replays real, human-verified HAJJv2 readings, one per second.</p>
       <div class="tags"><span>Privacy-preserving</span><span>Network-aware</span><span>Predictive</span><span>Human-in-the-loop</span></div>
       <div class="btn-row"><button class="btn primary big" data-go="live">Enter simulation →</button><button class="btn big" data-demo>▶ Watch the guided demo</button></div>
     </div>
@@ -341,13 +358,13 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
         <ul><li>What is happening now?</li><li>What may happen next?</li><li>How are crowd and transport systems interacting?</li><li>What happens if we intervene?</li></ul>
       </div>
     </div>
-    <p class="note" data-edit="start.note"><b>Demonstration only.</b> Every number here comes from a seeded synthetic simulation of three zones. The risk score is an interpretable weighted formula, not a trained or validated model, and no simulated event represents a real Hajj incident.</p>
+    <p class="note" data-edit="start.note"><b>What is real and what is not.</b> Zone A replays real readings from two public datasets: HAJJv2-CrowdCount (human-verified crowd counts, one per second, 18 clips) and HAJJv2 (per-frame labels for counter-flow, running, stationary people and moving vehicles). No public dataset has shuttle, road-traffic, emergency-route or heat readings, so those parts are synthetic and marked that way everywhere. The risk score is an interpretable weighted formula, not a trained or validated model, and intervention effects are modelled, not measured.</p>
     <div class="next"><button class="btn primary big" data-go="live">Next: Live monitor →</button></div>
   </section>
 
   <!-- 2 LIVE -->
   <section class="page" id="p-live" hidden>
-    <div class="page-head"><h2 data-edit="live.h">Live monitor</h2><p data-edit="live.p">What is happening now, and what is likely next. Press Play, or step one interval at a time.</p></div>
+    <div class="page-head"><h2 data-edit="live.h">Live monitor</h2><p data-edit="live.p">What is happening now, and what is likely next. Each step is one real second of HAJJv2 footage. Press Play to replay in real time, or step one second at a time.</p></div>
     <div id="recSlotLive"></div>
     <div class="grid2">
       <div class="card" id="riskCard"></div>
@@ -379,6 +396,33 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
       <span><i class="sw" style="background:var(--crit)"></i>Blocked</span>
     </div>
     <div class="card" id="zoneDetail"></div>
+    <div class="next"><button class="btn primary big" data-go="detect">Next: People detection →</button></div>
+  </section>
+
+  <!-- 3b DETECTION -->
+  <section class="page" id="p-detect" hidden>
+    <div class="page-head"><h2 data-edit="det.h">People detection</h2><p data-edit="det.p">A neural network (COCO-SSD with MobileNet v2) runs inside this browser and draws a box around every person and vehicle it finds, frame by frame. Video never leaves the device; only the counts are kept.</p></div>
+    <div class="card"><h3>Choose what to analyse</h3>
+      <div class="btn-row">
+        <button class="btn big" data-det="camera">Use camera</button>
+        <label class="btn big" for="detFile">Upload an image or video</label>
+        <button class="btn big" data-det="v11">HAJJv2 · road with vehicles</button>
+        <button class="btn big" data-det="v10">HAJJv2 · walkway</button>
+        <button class="btn big" data-det="v12">HAJJv2 · 1,600+ people</button>
+      </div>
+      <input type="file" id="detFile" accept="image/*,video/*" class="det-video">
+      <p class="muted small" id="detStatus">The detector (about 19 MB) loads the first time you choose a source.</p>
+    </div>
+    <div class="det-stage"><canvas id="detCanvas" aria-label="Detection view"></canvas><p class="det-empty" id="detEmpty">Choose a source above. Boxes appear around every person (green) and vehicle (blue) the detector finds.</p><video id="detVideo" class="det-video" muted playsinline></video></div>
+    <div class="card"><div class="det-controls">
+      <button class="btn" data-det="stop" disabled>Stop</button>
+      <button class="btn" data-det="mask" aria-pressed="true">Privacy mask: on</button>
+      <button class="btn" data-det="tiles" aria-pressed="false">Small-person mode: off</button>
+      <label class="f" for="detScore">Minimum confidence <input type="range" id="detScore" min="0.2" max="0.8" step="0.05" value="0.4"> <b class="mono" id="detScoreVal">40%</b></label>
+    </div>
+    <p class="muted small">Privacy mask pixelates the head area of every detected person on screen. Small-person mode splits each frame into four overlapping tiles so distant people are larger; it is slower.</p></div>
+    <div class="tiles" id="detStats"></div>
+    <p class="note" data-edit="det.note"><b>Why the counts differ on HAJJv2 footage.</b> COCO-SSD was trained on everyday scenes, so in dense Hajj crowds it finds only a small share of the people that human annotators counted in HAJJv2-CrowdCount. That gap is why dense-crowd counting models and datasets like HAJJv2 are needed. With a camera pointed at a room or a street, boxes appear around most people.</p>
     <div class="next"><button class="btn primary big" data-go="why">Next: Why this risk? →</button></div>
   </section>
 
@@ -407,12 +451,12 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
     <div class="card"><h3>3 · Simulation comparison</h3><p class="muted small" data-edit="wi.rankp">All interventions tested on separate twins and ranked by projected network risk. This is a comparison inside a synthetic simulation, not a guarantee that one action is safest.</p><div class="rank" id="rank"></div></div>
     <div id="recSlotWhatif"></div>
     <div class="card" id="activeCard"></div>
-    <div class="next"><button class="btn primary big" data-go="results">Next: 60-step results →</button></div>
+    <div class="next"><button class="btn primary big" data-go="results">Next: Run results →</button></div>
   </section>
 
   <!-- 7 RESULTS -->
   <section class="page" id="p-results" hidden>
-    <div class="page-head"><h2 id="resTitle">60-step results</h2><p data-edit="res.p">The live run compared with a counterfactual twin: same seed, same scenario, no interventions.</p></div>
+    <div class="page-head"><h2 id="resTitle">Run results</h2><p data-edit="res.p">This run compared with the same real HAJJv2 clip replayed with no interventions.</p></div>
     <div id="resBody" class="page" style="gap:32px"></div>
     <div class="next"><button class="btn primary big" data-go="labels">Next: Labels &amp; horizon →</button></div>
   </section>
@@ -442,12 +486,12 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
     <div class="page-head"><h2 data-edit="how.h">How it works</h2><p data-edit="how.p">The same pipeline as the MIIQAT-AI repository and poster, running end to end in this page.</p></div>
     <div class="card"><h3>Pipeline</h3>
       <ol class="pipe">
-        <li><div><b>Inputs</b><span class="muted">Cameras, shuttle GPS, gate counters, weather (synthetic here).</span></div></li>
+        <li><div><b>Inputs</b><span class="muted">Here: real HAJJv2 crowd counts and behaviour labels for Zone A, plus a live detector on the People detection page. Shuttle GPS, road traffic, emergency route and weather are synthetic.</span></div></li>
         <li><div><b>Privacy gate</b><span class="muted">Faces, plates and individual tracks are discarded at the edge.</span></div></li>
         <li><div><b>Anonymous perception</b><span class="muted">Counts, density, speed, direction, inflow and outflow per zone.</span></div></li>
         <li><div><b>Crowd, traffic and transport state</b><span class="muted">One state per zone plus shuttles, vehicles, gates, emergency route, heat.</span></div></li>
         <li><div><b>Network-level risk</b><span class="muted">Zones are nodes; corridors, roads and shuttle routes are edges. A full interchange backs up the corridor.</span></div></li>
-        <li><div><b>Short-horizon forecast</b><span class="muted">The twin is cloned and run forward h steps. h is set by the horizon test.</span></div></li>
+        <li><div><b>Short-horizon forecast</b><span class="muted">The twin is cloned and run forward h seconds without seeing future readings. h is measured on real HAJJv2 test clips.</span></div></li>
         <li><div><b>What-if simulation</b><span class="muted">Each intervention runs on its own clone.</span></div></li>
         <li><div><b>Compare outcomes</b><span class="muted">Projected network risk with and without each intervention.</span></div></li>
         <li><div><b>Explain</b><span class="muted">Contribution of every input to the score.</span></div></li>
@@ -467,12 +511,25 @@ body.editing [data-edit]{outline:2px dashed var(--brand);outline-offset:4px;bord
         </tbody>
       </table></div>
     </div>
+    <div class="card"><h3>Data sources</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Reading</th><th>Source</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Zone A crowd count, one per second</td><td>HAJJv2-CrowdCount annotations (github.com/reem-8899/HAJJv2-CrowdCount), 18 clips, 383 human-verified counts</td><td><span class="src src-real">Real</span></td></tr>
+          <tr><td>Counter-flow, running, stationary people, moving vehicles or wheelchairs</td><td>HAJJv2 per-frame labels (github.com/KAU-Smart-Crowd/HAJJv2_dataset), averaged over each second</td><td><span class="src src-real">Real</span></td></tr>
+          <tr><td>Detector sample clips</td><td>8-second excerpts of HAJJv2 videos 10, 11 and 12, downscaled</td><td><span class="src src-real">Real</span></td></tr>
+          <tr><td>Reference capacity 1,800</td><td>The densest human-verified HAJJv2 frame; used as 100% density for every clip</td><td><span class="src src-mixed">Derived</span></td></tr>
+          <tr><td>Shuttles, bus queue, road traffic, emergency route, heat, Zones B and C</td><td>No public dataset; scenario scripts</td><td><span class="src src-synthetic">Synthetic</span></td></tr>
+          <tr><td>AI City Challenge, CityFlow, UCF-QNRF</td><td>Listed in DATASETS.md; not used here (registration required or no per-second readings)</td><td><span class="src src-synthetic">Not used</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
     <div class="card"><h3>Limitations</h3>
       <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
-        <li>All data is synthetic. Numbers are illustrative and not calibrated to any real site.</li>
+        <li>Zone A readings are real but short: each HAJJv2 clip is 8 to 26 seconds, so a run lasts that long. Transport, emergency-route and heat parts are synthetic.</li>
         <li>The risk engine is a transparent weighted formula; it can later be replaced by a trained temporal model.</li>
-        <li>The “dangerous” label used in the horizon test is a synthetic rule (density and speed). Real labels must come from operators and incident reviews.</li>
-        <li>Forecasts and what-if results come from the same simulator; a real deployment needs site calibration and independent validation.</li>
+        <li>HAJJv2 has no “dangerous” labels. The horizon test therefore measures count-forecast error, not warning time for danger; danger labels must come from operators and incident reviews.</li>
+        <li>Intervention effects are modelled on top of the real readings, not measured. The reference capacity (1,800) is the densest HAJJv2 frame, not a measured capacity for each camera view.</li><li>The detector is a general-purpose model; it undercounts dense crowds.</li>
       </ul>
     </div>
     <div class="next"><button class="btn primary big" data-go="settings">Next: Settings →</button></div>
@@ -497,34 +554,41 @@ window.addEventListener('error', function (e) {
 (function () {
 if (window.__miqaatTeardown) { try { window.__miqaatTeardown(); } catch (e) { } }
 /* ================================================================
-   MIIQAT AI — SIMULATION + RISK ENGINE (synthetic, deterministic)
-   Everything the interface shows is computed here.
-   Edit DEFAULTS to change capacities, thresholds, weights, horizon.
+   MIIQAT AI — ENGINE
+   Zone A is driven by REAL readings from two public datasets:
+     • HAJJv2-CrowdCount (github.com/reem-8899/HAJJv2-CrowdCount):
+       human-verified crowd count, one reading per second
+     • HAJJv2 (github.com/KAU-Smart-Crowd/HAJJv2_dataset):
+       per-frame behaviour labels (moving opposite, different direction,
+       running, sitting/standing/sleeping, moving non-human objects)
+   No public dataset has shuttle, road-traffic, emergency-route or heat
+   readings, so those parts stay SYNTHETIC and are labelled that way.
    ================================================================ */
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ss = (a, b, t) => { const x = clamp((t - a) / (b - a)); return x * x * (3 - 2 * x); };
 const deep = o => JSON.parse(JSON.stringify(o));
 
+/* Real per-second readings, built from the two datasets (see build.py) */
+const HAJJ = {"Testing_10":{"split":"Testing","video":"Testing/Videos/10.mp4","labels":"HajjDataset_V10_Test.csv","frames":480,"readings":[{"t":0,"count":190,"opposite":6.0,"different":0.0,"running":0.0,"stationary":17.0,"nonhuman":2.0},{"t":1,"count":171,"opposite":6.0,"different":0.0,"running":0.0,"stationary":17.0,"nonhuman":2.0},{"t":2,"count":169,"opposite":6.0,"different":0.0,"running":0.0,"stationary":16.37,"nonhuman":2.0},{"t":3,"count":154,"opposite":6.52,"different":0.0,"running":0.0,"stationary":15.89,"nonhuman":2.0},{"t":4,"count":135,"opposite":7.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.3},{"t":5,"count":119,"opposite":7.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.0},{"t":6,"count":96,"opposite":7.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.0},{"t":7,"count":96,"opposite":7.52,"different":0.0,"running":0.0,"stationary":15.33,"nonhuman":1.0},{"t":8,"count":103,"opposite":8.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":1.0},{"t":9,"count":116,"opposite":8.93,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":0.93},{"t":10,"count":110,"opposite":9.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":0.52},{"t":11,"count":112,"opposite":9.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":1.11},{"t":12,"count":97,"opposite":9.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":2.0},{"t":13,"count":102,"opposite":9.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":2.0},{"t":14,"count":98,"opposite":9.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":2.0},{"t":15,"count":90,"opposite":9.0,"different":0.0,"running":0.0,"stationary":16.67,"nonhuman":2.0},{"t":16,"count":91,"opposite":9.0,"different":0.0,"running":0.0,"stationary":17.0,"nonhuman":2.0},{"t":17,"count":84,"opposite":9.0,"different":0.0,"running":0.0,"stationary":17.0,"nonhuman":2.0}]},"Testing_11":{"split":"Testing","video":"Testing/Videos/11.mp4","labels":"HajjDataset_V11_Test.csv.xls","frames":501,"readings":[{"t":0,"count":147,"opposite":0.0,"different":0.0,"running":0.0,"stationary":159.0,"nonhuman":0.0},{"t":1,"count":157,"opposite":0.0,"different":0.0,"running":0.0,"stationary":159.0,"nonhuman":0.0},{"t":2,"count":154,"opposite":0.0,"different":0.0,"running":0.0,"stationary":159.0,"nonhuman":0.0},{"t":3,"count":146,"opposite":0.0,"different":0.0,"running":0.0,"stationary":159.0,"nonhuman":0.0},{"t":4,"count":164,"opposite":0.0,"different":0.0,"running":0.0,"stationary":159.0,"nonhuman":0.0},{"t":5,"count":167,"opposite":0.0,"different":0.0,"running":0.0,"stationary":158.52,"nonhuman":0.0},{"t":6,"count":142,"opposite":0.0,"different":0.0,"running":0.0,"stationary":158.0,"nonhuman":0.0},{"t":7,"count":145,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.37,"nonhuman":0.0},{"t":8,"count":154,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":9,"count":158,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":10,"count":155,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":11,"count":154,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":12,"count":148,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":13,"count":150,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":14,"count":160,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":15,"count":151,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":16,"count":147,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":17,"count":153,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0},{"t":18,"count":150,"opposite":0.0,"different":0.0,"running":0.0,"stationary":157.0,"nonhuman":0.0}]},"Testing_12":{"split":"Testing","video":"Testing/Videos/12.mp4","labels":"HajjDataset_V12_Test.csv","frames":501,"readings":[{"t":0,"count":1700,"opposite":14.26,"different":10.56,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":1,"count":1688,"opposite":16.56,"different":12.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":2,"count":1706,"opposite":18.67,"different":12.0,"running":0.0,"stationary":6.41,"nonhuman":0.0},{"t":3,"count":1719,"opposite":21.3,"different":11.33,"running":0.0,"stationary":7.11,"nonhuman":0.0},{"t":4,"count":1694,"opposite":22.26,"different":11.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":5,"count":1681,"opposite":22.74,"different":11.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":6,"count":1700,"opposite":23.0,"different":10.81,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":7,"count":1712,"opposite":21.52,"different":10.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":8,"count":1688,"opposite":20.0,"different":8.52,"running":0.0,"stationary":7.19,"nonhuman":0.0},{"t":9,"count":1675,"opposite":18.0,"different":6.44,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":10,"count":1694,"opposite":16.04,"different":4.56,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":11,"count":1706,"opposite":14.7,"different":5.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":12,"count":1719,"opposite":12.3,"different":4.41,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":13,"count":1700,"opposite":8.85,"different":4.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":14,"count":1688,"opposite":7.7,"different":4.0,"running":0.0,"stationary":6.0,"nonhuman":0.0},{"t":15,"count":1694,"opposite":6.0,"different":4.0,"running":0.0,"stationary":6.0,"nonhuman":0.0},{"t":16,"count":1712,"opposite":6.0,"different":3.22,"running":0.0,"stationary":5.48,"nonhuman":0.0},{"t":17,"count":1706,"opposite":6.0,"different":3.0,"running":0.0,"stationary":2.52,"nonhuman":0.0},{"t":18,"count":1700,"opposite":6.0,"different":2.73,"running":0.0,"stationary":2.0,"nonhuman":0.0}]},"Testing_2":{"split":"Testing","video":"Testing/Videos/2.mp4","labels":"HajjDataset_V2_Test.csv","frames":501,"readings":[{"t":0,"count":83,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":1,"count":82,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":2,"count":74,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":3,"count":74,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":4,"count":68,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":5,"count":65,"opposite":0.0,"different":0.0,"running":0.11,"stationary":5.0,"nonhuman":0.0},{"t":6,"count":73,"opposite":0.78,"different":0.0,"running":1.0,"stationary":5.0,"nonhuman":0.0},{"t":7,"count":74,"opposite":1.0,"different":0.0,"running":1.0,"stationary":5.0,"nonhuman":0.0},{"t":8,"count":81,"opposite":1.0,"different":0.0,"running":0.89,"stationary":5.0,"nonhuman":0.0},{"t":9,"count":74,"opposite":1.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":10,"count":77,"opposite":1.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":11,"count":79,"opposite":1.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":12,"count":63,"opposite":1.0,"different":0.0,"running":0.0,"stationary":4.52,"nonhuman":0.0},{"t":13,"count":72,"opposite":1.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":14,"count":85,"opposite":1.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":15,"count":62,"opposite":0.11,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":16,"count":79,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":17,"count":72,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":18,"count":92,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0}]},"Testing_3":{"split":"Testing","video":"Testing/Videos/3.mp4","labels":"HajjDataset_V3_Test.csv.xls","frames":492,"readings":[{"t":0,"count":161,"opposite":2.0,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":1.0},{"t":1,"count":115,"opposite":2.0,"different":1.0,"running":0.0,"stationary":10.85,"nonhuman":0.19},{"t":2,"count":148,"opposite":2.0,"different":1.0,"running":0.0,"stationary":9.52,"nonhuman":0.0},{"t":3,"count":110,"opposite":2.0,"different":0.85,"running":0.0,"stationary":8.19,"nonhuman":0.0},{"t":4,"count":109,"opposite":2.0,"different":0.0,"running":0.0,"stationary":8.37,"nonhuman":0.0},{"t":5,"count":123,"opposite":2.0,"different":0.0,"running":0.0,"stationary":10.48,"nonhuman":0.0},{"t":6,"count":123,"opposite":2.0,"different":0.0,"running":0.0,"stationary":9.0,"nonhuman":0.0},{"t":7,"count":114,"opposite":2.0,"different":0.56,"running":0.0,"stationary":6.63,"nonhuman":0.0},{"t":8,"count":110,"opposite":2.37,"different":1.0,"running":0.0,"stationary":7.11,"nonhuman":0.0},{"t":9,"count":102,"opposite":2.81,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":10,"count":122,"opposite":2.0,"different":1.0,"running":0.0,"stationary":7.48,"nonhuman":0.0},{"t":11,"count":130,"opposite":2.0,"different":1.0,"running":0.0,"stationary":8.48,"nonhuman":0.0},{"t":12,"count":122,"opposite":2.0,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":13,"count":140,"opposite":1.67,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":14,"count":127,"opposite":0.3,"different":1.0,"running":0.0,"stationary":8.93,"nonhuman":0.0},{"t":15,"count":128,"opposite":1.0,"different":1.0,"running":0.0,"stationary":9.0,"nonhuman":0.0},{"t":16,"count":116,"opposite":1.0,"different":0.41,"running":0.0,"stationary":8.37,"nonhuman":0.0},{"t":17,"count":120,"opposite":1.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":18,"count":102,"opposite":1.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0}]},"Testing_5":{"split":"Testing","video":"Testing/Videos/5.mp4","labels":"HajjDataset_V5_Test.csv","frames":501,"readings":[{"t":0,"count":99,"opposite":0.0,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":1,"count":96,"opposite":0.0,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":2,"count":99,"opposite":0.0,"different":2.7,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":3,"count":96,"opposite":0.0,"different":3.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":4,"count":104,"opposite":0.0,"different":3.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":5,"count":102,"opposite":0.0,"different":1.81,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":6,"count":111,"opposite":0.0,"different":1.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":7,"count":109,"opposite":0.0,"different":1.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":8,"count":119,"opposite":0.0,"different":1.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":9,"count":109,"opposite":0.0,"different":1.74,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":10,"count":104,"opposite":0.0,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":11,"count":100,"opposite":0.0,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":12,"count":108,"opposite":0.19,"different":1.37,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":13,"count":101,"opposite":1.0,"different":0.44,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":14,"count":95,"opposite":1.96,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":15,"count":112,"opposite":3.59,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":16,"count":98,"opposite":4.0,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":17,"count":95,"opposite":4.0,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":18,"count":96,"opposite":4.0,"different":0.0,"running":0.0,"stationary":10.8,"nonhuman":0.0}]},"Testing_7":{"split":"Testing","video":"Testing/Videos/7.mp4","labels":"HajjDataset_V7_Test.csv","frames":466,"readings":[{"t":0,"count":88,"opposite":7.0,"different":2.67,"running":0.0,"stationary":11.07,"nonhuman":1.0},{"t":1,"count":79,"opposite":7.0,"different":1.78,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":2,"count":75,"opposite":7.0,"different":1.37,"running":0.0,"stationary":12.04,"nonhuman":1.0},{"t":3,"count":74,"opposite":7.0,"different":2.0,"running":0.0,"stationary":13.0,"nonhuman":1.0},{"t":4,"count":71,"opposite":7.0,"different":2.33,"running":0.0,"stationary":10.67,"nonhuman":1.0},{"t":5,"count":69,"opposite":7.0,"different":3.0,"running":0.0,"stationary":9.0,"nonhuman":1.0},{"t":6,"count":68,"opposite":7.0,"different":3.26,"running":0.0,"stationary":9.0,"nonhuman":1.0},{"t":7,"count":71,"opposite":7.0,"different":4.0,"running":0.0,"stationary":9.0,"nonhuman":1.0},{"t":8,"count":72,"opposite":7.0,"different":3.15,"running":0.0,"stationary":8.44,"nonhuman":1.0},{"t":9,"count":72,"opposite":7.0,"different":3.74,"running":0.0,"stationary":8.7,"nonhuman":1.0},{"t":10,"count":69,"opposite":7.0,"different":4.0,"running":0.0,"stationary":9.0,"nonhuman":1.0},{"t":11,"count":56,"opposite":7.0,"different":4.0,"running":0.0,"stationary":8.15,"nonhuman":1.0},{"t":12,"count":68,"opposite":7.0,"different":4.0,"running":0.0,"stationary":8.0,"nonhuman":1.0},{"t":13,"count":62,"opposite":7.0,"different":4.0,"running":0.0,"stationary":8.0,"nonhuman":1.0},{"t":14,"count":58,"opposite":7.0,"different":3.44,"running":0.0,"stationary":8.0,"nonhuman":1.0},{"t":15,"count":65,"opposite":7.0,"different":3.0,"running":0.0,"stationary":8.0,"nonhuman":1.0},{"t":16,"count":63,"opposite":7.0,"different":3.0,"running":0.0,"stationary":8.7,"nonhuman":1.0},{"t":17,"count":61,"opposite":7.0,"different":2.0,"running":0.0,"stationary":9.0,"nonhuman":1.0}]},"Testing_8":{"split":"Testing","video":"Testing/Videos/8.mp4","labels":"HajjDataset_V8_Test.csv","frames":473,"readings":[{"t":0,"count":92,"opposite":2.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":1,"count":86,"opposite":2.52,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":2,"count":78,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":3,"count":71,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":4,"count":72,"opposite":3.7,"different":0.0,"running":0.0,"stationary":8.89,"nonhuman":0.0},{"t":5,"count":69,"opposite":4.0,"different":0.0,"running":0.0,"stationary":10.0,"nonhuman":0.0},{"t":6,"count":69,"opposite":4.89,"different":0.0,"running":0.0,"stationary":10.0,"nonhuman":0.0},{"t":7,"count":72,"opposite":5.0,"different":0.0,"running":0.0,"stationary":10.0,"nonhuman":0.0},{"t":8,"count":74,"opposite":5.0,"different":0.0,"running":0.0,"stationary":10.93,"nonhuman":0.0},{"t":9,"count":68,"opposite":5.0,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":10,"count":65,"opposite":5.0,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":11,"count":66,"opposite":5.0,"different":0.0,"running":0.04,"stationary":10.07,"nonhuman":0.0},{"t":12,"count":64,"opposite":5.0,"different":0.0,"running":1.0,"stationary":10.0,"nonhuman":0.0},{"t":13,"count":62,"opposite":4.96,"different":0.0,"running":1.0,"stationary":10.04,"nonhuman":0.0},{"t":14,"count":59,"opposite":4.0,"different":0.0,"running":1.0,"stationary":11.0,"nonhuman":0.0},{"t":15,"count":71,"opposite":4.0,"different":0.0,"running":1.0,"stationary":11.0,"nonhuman":0.0},{"t":16,"count":72,"opposite":4.0,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0},{"t":17,"count":68,"opposite":4.0,"different":0.0,"running":0.0,"stationary":11.0,"nonhuman":0.0}]},"Testing_9":{"split":"Testing","video":"Testing/Videos/9.mp4","labels":"HajjDataset_V9_Test.csv","frames":475,"readings":[{"t":0,"count":304,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":1,"count":311,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":2,"count":312,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":3,"count":315,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":4,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":5,"count":315,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":6,"count":316,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.81,"nonhuman":0.0},{"t":7,"count":318,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.0,"nonhuman":0.0},{"t":8,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.0,"nonhuman":0.0},{"t":9,"count":319,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.93,"nonhuman":0.0},{"t":10,"count":318,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.26,"nonhuman":0.0},{"t":11,"count":320,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":12,"count":322,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":13,"count":325,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":14,"count":323,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":15,"count":322,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.44,"nonhuman":0.0},{"t":16,"count":321,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":17,"count":321,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0}]},"Training_10":{"split":"Training","video":"Training/Videos/10.mp4","labels":"HajjDataset_V10_Train.csv","frames":700,"readings":[{"t":0,"count":192,"opposite":5.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.07},{"t":1,"count":189,"opposite":6.33,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":2.0},{"t":2,"count":192,"opposite":9.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":2.0},{"t":3,"count":190,"opposite":10.44,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":2.0},{"t":4,"count":193,"opposite":11.67,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":2.0},{"t":5,"count":195,"opposite":11.52,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":2.0},{"t":6,"count":197,"opposite":12.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.67},{"t":7,"count":198,"opposite":13.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.0},{"t":8,"count":195,"opposite":13.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":0.63},{"t":9,"count":198,"opposite":13.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":0.0},{"t":10,"count":198,"opposite":13.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":0.26},{"t":11,"count":202,"opposite":13.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":1.0},{"t":12,"count":200,"opposite":13.0,"different":0.0,"running":0.0,"stationary":14.41,"nonhuman":1.0},{"t":13,"count":203,"opposite":13.0,"different":0.0,"running":0.0,"stationary":14.0,"nonhuman":1.07},{"t":14,"count":205,"opposite":12.37,"different":0.0,"running":0.0,"stationary":14.0,"nonhuman":2.0},{"t":15,"count":207,"opposite":12.0,"different":0.0,"running":0.0,"stationary":14.0,"nonhuman":2.0},{"t":16,"count":198,"opposite":12.0,"different":0.0,"running":0.0,"stationary":14.3,"nonhuman":2.0},{"t":17,"count":198,"opposite":12.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":2.04},{"t":18,"count":193,"opposite":12.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":3.0},{"t":19,"count":189,"opposite":12.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":3.0},{"t":20,"count":187,"opposite":12.0,"different":0.0,"running":0.0,"stationary":15.0,"nonhuman":3.11},{"t":21,"count":183,"opposite":12.19,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":4.0},{"t":22,"count":179,"opposite":13.0,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":4.0},{"t":23,"count":178,"opposite":12.15,"different":0.0,"running":0.0,"stationary":16.78,"nonhuman":3.89},{"t":24,"count":175,"opposite":12.0,"different":0.0,"running":0.0,"stationary":17.0,"nonhuman":3.0},{"t":25,"count":174,"opposite":12.0,"different":0.0,"running":0.0,"stationary":16.84,"nonhuman":2.0}]},"Training_11":{"split":"Training","video":"Training/Videos/11.mp4","labels":"HajjDataset_V11_Train.csv","frames":200,"readings":[{"t":0,"count":172,"opposite":0.0,"different":0.0,"running":0.0,"stationary":124.0,"nonhuman":9.0},{"t":1,"count":173,"opposite":0.0,"different":0.0,"running":0.0,"stationary":124.74,"nonhuman":9.0},{"t":2,"count":182,"opposite":0.0,"different":0.0,"running":0.0,"stationary":124.26,"nonhuman":9.0},{"t":3,"count":188,"opposite":0.0,"different":0.0,"running":0.0,"stationary":123.52,"nonhuman":9.7},{"t":4,"count":190,"opposite":0.0,"different":0.0,"running":0.0,"stationary":123.0,"nonhuman":10.0},{"t":5,"count":194,"opposite":0.0,"different":0.0,"running":0.0,"stationary":122.7,"nonhuman":10.0},{"t":6,"count":193,"opposite":0.0,"different":0.0,"running":0.0,"stationary":120.04,"nonhuman":10.0},{"t":7,"count":196,"opposite":0.0,"different":0.0,"running":0.0,"stationary":119.18,"nonhuman":10.0}]},"Training_12":{"split":"Training","video":"Training/Videos/12.mp4","labels":"HajjDataset_V12_Train.csv","frames":700,"readings":[{"t":0,"count":1600,"opposite":7.41,"different":6.59,"running":0.0,"stationary":1.0,"nonhuman":0.0},{"t":1,"count":1600,"opposite":9.63,"different":7.59,"running":0.0,"stationary":1.59,"nonhuman":0.0},{"t":2,"count":1600,"opposite":10.74,"different":8.0,"running":0.0,"stationary":2.0,"nonhuman":0.0},{"t":3,"count":1680,"opposite":11.52,"different":8.67,"running":0.0,"stationary":2.0,"nonhuman":0.0},{"t":4,"count":1680,"opposite":12.0,"different":9.0,"running":0.0,"stationary":2.0,"nonhuman":0.0},{"t":5,"count":1680,"opposite":12.85,"different":7.74,"running":0.0,"stationary":2.0,"nonhuman":0.0},{"t":6,"count":1680,"opposite":13.0,"different":6.93,"running":0.0,"stationary":2.15,"nonhuman":0.0},{"t":7,"count":1680,"opposite":13.0,"different":5.26,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":8,"count":1680,"opposite":13.0,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":9,"count":1680,"opposite":13.0,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":10,"count":1680,"opposite":13.0,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":11,"count":1680,"opposite":13.0,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":12,"count":1680,"opposite":14.74,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":13,"count":1680,"opposite":16.89,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":14,"count":1680,"opposite":19.52,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":15,"count":1800,"opposite":22.37,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":16,"count":1800,"opposite":23.7,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":17,"count":1800,"opposite":27.11,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":18,"count":1800,"opposite":28.81,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":19,"count":1800,"opposite":29.07,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":20,"count":1800,"opposite":29.78,"different":5.26,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":21,"count":1800,"opposite":29.19,"different":5.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":22,"count":1800,"opposite":29.0,"different":5.96,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":23,"count":1800,"opposite":29.0,"different":7.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":24,"count":1800,"opposite":28.52,"different":7.0,"running":0.0,"stationary":3.0,"nonhuman":0.0},{"t":25,"count":1800,"opposite":26.4,"different":6.52,"running":0.0,"stationary":2.92,"nonhuman":0.0}]},"Training_2":{"split":"Training","video":"Training/Videos/2.mp4","labels":"HajjDataset_V2_Train.csv","frames":700,"readings":[{"t":0,"count":85,"opposite":1.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":1,"count":82,"opposite":1.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":2,"count":83,"opposite":1.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":3,"count":79,"opposite":1.0,"different":0.0,"running":0.0,"stationary":4.44,"nonhuman":0.0},{"t":4,"count":78,"opposite":1.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":5,"count":79,"opposite":1.11,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":6,"count":76,"opposite":2.26,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":7,"count":75,"opposite":3.0,"different":0.0,"running":0.59,"stationary":4.0,"nonhuman":0.0},{"t":8,"count":70,"opposite":3.0,"different":0.0,"running":1.0,"stationary":5.41,"nonhuman":0.0},{"t":9,"count":73,"opposite":3.0,"different":0.0,"running":0.3,"stationary":6.0,"nonhuman":0.0},{"t":10,"count":70,"opposite":2.78,"different":0.0,"running":0.0,"stationary":5.81,"nonhuman":0.0},{"t":11,"count":73,"opposite":2.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":12,"count":74,"opposite":2.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":13,"count":76,"opposite":2.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":14,"count":69,"opposite":2.0,"different":0.0,"running":0.0,"stationary":4.44,"nonhuman":0.0},{"t":15,"count":72,"opposite":1.59,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":16,"count":74,"opposite":1.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":17,"count":80,"opposite":0.3,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":18,"count":79,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":19,"count":78,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":20,"count":76,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":21,"count":76,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.0,"nonhuman":0.0},{"t":22,"count":76,"opposite":0.0,"different":0.0,"running":0.0,"stationary":4.85,"nonhuman":0.0},{"t":23,"count":72,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.0,"nonhuman":0.0},{"t":24,"count":69,"opposite":0.0,"different":0.0,"running":0.0,"stationary":5.63,"nonhuman":0.0},{"t":25,"count":65,"opposite":0.0,"different":0.0,"running":0.0,"stationary":6.0,"nonhuman":0.0}]},"Training_3":{"split":"Training","video":"Training/Videos/3.mp4","labels":"HajjDataset_V3_Train.csv","frames":700,"readings":[{"t":0,"count":112,"opposite":2.74,"different":3.0,"running":0.0,"stationary":12.03,"nonhuman":0.0},{"t":1,"count":115,"opposite":3.93,"different":3.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":2,"count":116,"opposite":4.48,"different":3.0,"running":0.0,"stationary":12.59,"nonhuman":0.0},{"t":3,"count":118,"opposite":5.0,"different":3.0,"running":0.0,"stationary":13.59,"nonhuman":0.0},{"t":4,"count":125,"opposite":5.0,"different":3.0,"running":0.0,"stationary":13.0,"nonhuman":0.0},{"t":5,"count":127,"opposite":5.0,"different":3.0,"running":0.0,"stationary":13.26,"nonhuman":0.0},{"t":6,"count":132,"opposite":5.0,"different":3.0,"running":0.0,"stationary":13.41,"nonhuman":0.0},{"t":7,"count":135,"opposite":5.0,"different":3.0,"running":0.0,"stationary":15.0,"nonhuman":0.0},{"t":8,"count":139,"opposite":5.0,"different":3.0,"running":0.0,"stationary":14.89,"nonhuman":0.0},{"t":9,"count":142,"opposite":5.0,"different":3.0,"running":0.0,"stationary":14.74,"nonhuman":0.0},{"t":10,"count":143,"opposite":5.0,"different":3.0,"running":0.0,"stationary":15.78,"nonhuman":0.0},{"t":11,"count":145,"opposite":5.0,"different":2.04,"running":0.0,"stationary":16.81,"nonhuman":0.0},{"t":12,"count":148,"opposite":5.07,"different":2.0,"running":0.0,"stationary":16.78,"nonhuman":0.0},{"t":13,"count":151,"opposite":6.0,"different":1.44,"running":0.0,"stationary":14.19,"nonhuman":0.0},{"t":14,"count":149,"opposite":6.81,"different":1.0,"running":0.0,"stationary":13.74,"nonhuman":0.0},{"t":15,"count":148,"opposite":7.0,"different":1.0,"running":0.0,"stationary":12.55,"nonhuman":0.0},{"t":16,"count":149,"opposite":6.37,"different":1.0,"running":0.0,"stationary":12.11,"nonhuman":0.0},{"t":17,"count":149,"opposite":5.11,"different":0.96,"running":0.0,"stationary":10.37,"nonhuman":0.0},{"t":18,"count":156,"opposite":5.0,"different":0.89,"running":0.0,"stationary":11.19,"nonhuman":0.0},{"t":19,"count":154,"opposite":6.07,"different":1.0,"running":0.0,"stationary":12.89,"nonhuman":0.81},{"t":20,"count":159,"opposite":7.19,"different":1.0,"running":0.0,"stationary":14.52,"nonhuman":1.0},{"t":21,"count":160,"opposite":8.0,"different":1.04,"running":0.0,"stationary":15.41,"nonhuman":1.0},{"t":22,"count":160,"opposite":8.0,"different":2.0,"running":0.0,"stationary":15.0,"nonhuman":1.0},{"t":23,"count":164,"opposite":8.0,"different":2.0,"running":0.0,"stationary":14.04,"nonhuman":1.0},{"t":24,"count":160,"opposite":8.0,"different":2.0,"running":0.0,"stationary":14.22,"nonhuman":1.0},{"t":25,"count":155,"opposite":8.0,"different":1.4,"running":0.0,"stationary":15.0,"nonhuman":1.0}]},"Training_5":{"split":"Training","video":"Training/Videos/5.mp4","labels":"HajjDataset_V5_Train.csv","frames":700,"readings":[{"t":0,"count":90,"opposite":1.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":1,"count":87,"opposite":1.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":2,"count":87,"opposite":1.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":3,"count":84,"opposite":1.96,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":4,"count":80,"opposite":2.0,"different":0.0,"running":0.0,"stationary":13.56,"nonhuman":0.0},{"t":5,"count":76,"opposite":2.04,"different":0.0,"running":0.0,"stationary":15.93,"nonhuman":0.0},{"t":6,"count":76,"opposite":3.11,"different":0.0,"running":0.0,"stationary":16.0,"nonhuman":0.0},{"t":7,"count":75,"opposite":4.0,"different":0.0,"running":0.0,"stationary":15.67,"nonhuman":0.0},{"t":8,"count":74,"opposite":4.52,"different":0.0,"running":0.0,"stationary":13.15,"nonhuman":0.0},{"t":9,"count":73,"opposite":5.85,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":10,"count":74,"opposite":6.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":11,"count":70,"opposite":6.0,"different":0.11,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":12,"count":67,"opposite":6.0,"different":1.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":13,"count":73,"opposite":6.0,"different":0.81,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":14,"count":68,"opposite":6.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":15,"count":64,"opposite":6.0,"different":0.04,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":16,"count":65,"opposite":6.0,"different":0.85,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":17,"count":69,"opposite":6.0,"different":1.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":18,"count":72,"opposite":6.0,"different":1.0,"running":0.0,"stationary":12.0,"nonhuman":0.0},{"t":19,"count":69,"opposite":4.81,"different":1.0,"running":0.0,"stationary":12.15,"nonhuman":0.0},{"t":20,"count":65,"opposite":4.0,"different":1.0,"running":0.0,"stationary":13.0,"nonhuman":0.0},{"t":21,"count":60,"opposite":4.0,"different":1.0,"running":0.0,"stationary":13.0,"nonhuman":0.0},{"t":22,"count":64,"opposite":4.0,"different":1.0,"running":0.0,"stationary":13.0,"nonhuman":0.0},{"t":23,"count":67,"opposite":4.0,"different":1.0,"running":0.0,"stationary":13.0,"nonhuman":0.0},{"t":24,"count":68,"opposite":3.56,"different":1.0,"running":0.0,"stationary":13.0,"nonhuman":0.0},{"t":25,"count":75,"opposite":2.72,"different":1.0,"running":0.0,"stationary":13.0,"nonhuman":0.0}]},"Training_7":{"split":"Training","video":"Training/Videos/7.mp4","labels":"HajjDataset_V7_Train.csv","frames":700,"readings":[{"t":0,"count":85,"opposite":4.0,"different":4.0,"running":0.0,"stationary":11.0,"nonhuman":1.0},{"t":1,"count":83,"opposite":4.0,"different":4.0,"running":0.0,"stationary":11.0,"nonhuman":1.0},{"t":2,"count":81,"opposite":4.0,"different":3.59,"running":0.0,"stationary":11.74,"nonhuman":1.0},{"t":3,"count":78,"opposite":4.0,"different":2.74,"running":0.0,"stationary":11.11,"nonhuman":1.0},{"t":4,"count":75,"opposite":4.0,"different":2.0,"running":0.0,"stationary":11.7,"nonhuman":1.0},{"t":5,"count":74,"opposite":4.0,"different":2.0,"running":0.0,"stationary":12.22,"nonhuman":1.0},{"t":6,"count":80,"opposite":4.0,"different":2.0,"running":0.0,"stationary":14.0,"nonhuman":1.0},{"t":7,"count":86,"opposite":4.52,"different":1.44,"running":0.0,"stationary":14.0,"nonhuman":1.0},{"t":8,"count":85,"opposite":5.37,"different":1.3,"running":0.0,"stationary":14.0,"nonhuman":1.0},{"t":9,"count":83,"opposite":6.0,"different":1.0,"running":0.0,"stationary":14.0,"nonhuman":1.0},{"t":10,"count":84,"opposite":6.0,"different":1.0,"running":0.0,"stationary":14.0,"nonhuman":1.0},{"t":11,"count":89,"opposite":6.0,"different":0.81,"running":0.0,"stationary":14.0,"nonhuman":1.0},{"t":12,"count":87,"opposite":6.22,"different":0.0,"running":0.0,"stationary":12.33,"nonhuman":1.0},{"t":13,"count":86,"opposite":8.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":14,"count":87,"opposite":8.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":15,"count":86,"opposite":8.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":16,"count":80,"opposite":8.0,"different":0.0,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":17,"count":78,"opposite":8.52,"different":0.04,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":18,"count":75,"opposite":9.52,"different":1.0,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":19,"count":79,"opposite":10.0,"different":1.0,"running":0.0,"stationary":12.0,"nonhuman":1.0},{"t":20,"count":78,"opposite":10.0,"different":1.0,"running":0.0,"stationary":11.52,"nonhuman":1.0},{"t":21,"count":70,"opposite":10.0,"different":1.37,"running":0.0,"stationary":11.0,"nonhuman":1.0},{"t":22,"count":69,"opposite":10.33,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":1.0},{"t":23,"count":65,"opposite":10.63,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":1.0},{"t":24,"count":67,"opposite":9.41,"different":2.0,"running":0.0,"stationary":11.0,"nonhuman":1.0},{"t":25,"count":69,"opposite":9.0,"different":1.68,"running":0.0,"stationary":11.0,"nonhuman":1.0}]},"Training_8":{"split":"Training","video":"Training/Videos/8.mp4","labels":"HajjDataset_V8_Train.csv","frames":700,"readings":[{"t":0,"count":72,"opposite":3.0,"different":0.0,"running":0.0,"stationary":7.15,"nonhuman":0.0},{"t":1,"count":75,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":2,"count":73,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":3,"count":72,"opposite":3.0,"different":0.93,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":4,"count":64,"opposite":3.15,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":5,"count":75,"opposite":4.22,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":6,"count":71,"opposite":5.0,"different":1.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":7,"count":66,"opposite":4.85,"different":1.0,"running":0.0,"stationary":8.15,"nonhuman":0.0},{"t":8,"count":70,"opposite":4.0,"different":0.67,"running":0.0,"stationary":9.0,"nonhuman":0.0},{"t":9,"count":66,"opposite":4.0,"different":0.0,"running":0.0,"stationary":8.33,"nonhuman":0.0},{"t":10,"count":75,"opposite":4.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":11,"count":80,"opposite":3.96,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":12,"count":86,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":13,"count":84,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":14,"count":93,"opposite":2.93,"different":0.0,"running":0.0,"stationary":8.0,"nonhuman":0.0},{"t":15,"count":94,"opposite":2.0,"different":0.0,"running":0.0,"stationary":8.3,"nonhuman":0.0},{"t":16,"count":92,"opposite":2.0,"different":0.0,"running":0.0,"stationary":9.0,"nonhuman":0.0},{"t":17,"count":91,"opposite":2.0,"different":0.0,"running":0.0,"stationary":9.0,"nonhuman":0.0},{"t":18,"count":91,"opposite":2.85,"different":0.0,"running":0.0,"stationary":9.0,"nonhuman":0.0},{"t":19,"count":86,"opposite":3.0,"different":0.0,"running":0.0,"stationary":8.44,"nonhuman":0.0},{"t":20,"count":84,"opposite":3.22,"different":0.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":21,"count":81,"opposite":4.0,"different":0.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":22,"count":77,"opposite":4.0,"different":0.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":23,"count":74,"opposite":4.0,"different":0.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":24,"count":69,"opposite":4.0,"different":0.0,"running":0.0,"stationary":7.0,"nonhuman":0.0},{"t":25,"count":65,"opposite":4.32,"different":0.0,"running":0.0,"stationary":7.0,"nonhuman":0.0}]},"Training_9":{"split":"Training","video":"Training/Videos/9.mp4","labels":"HajjDataset_V9_Train.csv","frames":700,"readings":[{"t":0,"count":322,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":1,"count":319,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":2,"count":312,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":3,"count":310,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":4,"count":309,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":5,"count":312,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.0,"nonhuman":0.0},{"t":6,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":69.81,"nonhuman":0.0},{"t":7,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.0,"nonhuman":0.0},{"t":8,"count":316,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.0,"nonhuman":0.0},{"t":9,"count":320,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.93,"nonhuman":0.0},{"t":10,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.26,"nonhuman":0.0},{"t":11,"count":316,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":12,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":13,"count":320,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":14,"count":315,"opposite":0.0,"different":0.0,"running":0.0,"stationary":73.0,"nonhuman":0.0},{"t":15,"count":316,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.44,"nonhuman":0.0},{"t":16,"count":320,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":17,"count":319,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":18,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":19,"count":318,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":20,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":21,"count":316,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":22,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":72.0,"nonhuman":0.0},{"t":23,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":71.11,"nonhuman":0.0},{"t":24,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":70.37,"nonhuman":0.0},{"t":25,"count":317,"opposite":0.0,"different":0.0,"running":0.0,"stationary":70.0,"nonhuman":0.0}]}};
+const HAJJ_MAX_COUNT = 1800;   // densest human-verified frame in HAJJv2-CrowdCount (Training_12)
+
 /* ---------- 1. CONFIGURATION (one place) ---------- */
 const DEFAULTS = {
   seed: 2026,
-  steps: 60,
-  stepMinutes: 1,            // one simulation step = this many simulated minutes
-  playSpeedMs: 650,          // delay between steps when playing
-  scenario: 'rising',
-  horizon: 5,                // short-horizon forecast, in steps (provisional: see Horizon test)
+  playSpeedMs: 1000,          // 1 step = 1 real second of footage; 1000 ms plays it in real time
+  scenario: 'blocked',
+  horizon: 6,                 // seconds ahead; measured on real data by the horizon test (≤10% error)
+  horizonTolerance: 10,       // % mean relative count error allowed when choosing the horizon
+  forecaster: 'persistence',  // best one-step baseline on real HAJJv2 data (repo benchmark)
+  recommendAt: 'MEDIUM',      // risk level (now or forecast) that makes the system suggest an intervention
   thresholds: { medium: 0.40, high: 0.70, critical: 0.85 },
   weights: { density: 0.28, flow: 0.12, movement: 0.10, shuttle: 0.12, conflict: 0.16, emergency: 0.14, heat: 0.05, uncertainty: 0.03 },
   zones: {
-    A: { name: 'Pilgrim Corridor', capacity: 3000 },
+    A: { name: 'Pilgrim Corridor', capacity: HAJJ_MAX_COUNT },
     B: { name: 'Shuttle Interchange', capacity: 1500 },
     C: { name: 'Emergency Access', capacity: 800 }
   },
-  shuttleCapacity: 50,
-  // Synthetic "this situation was dangerous" label, used for the horizon test.
-  // It is defined independently of the risk score.
-  hazardRule: { density: 0.95, speed: 0.45 },
-  alarmThreshold: 0.60       // forecast risk at or above this counts as a warning in the horizon test
+  shuttleCapacity: 50
 };
 let CFG = deep(DEFAULTS);
 
@@ -542,8 +606,9 @@ function levelOf(r) {
   if (r >= th.medium) return 'MEDIUM';
   return 'LOW';
 }
+const levelValue = l => l === 'LOW' ? 0 : CFG.thresholds[l.toLowerCase()];
 
-/* ---------- 2. SEEDED RANDOM (mulberry32, state kept inside the sim state) ---------- */
+/* ---------- 2. SEEDED RANDOM (only used by the synthetic parts) ---------- */
 function rand(s) {
   s.rng = (s.rng + 0x6D2B79F5) | 0;
   let t = s.rng;
@@ -553,171 +618,171 @@ function rand(s) {
 }
 const noise = s => rand(s) * 2 - 1;
 
-/* ---------- 3. SCENARIOS ---------- */
-// j = small seeded timing jitter so repeated runs differ slightly
+/* ---------- 3. SCENARIOS: a real HAJJv2 clip + an optional synthetic stressor ----------
+   f = fraction of the clip elapsed (0 → 1). Synthetic functions never touch Zone A.   */
 const SCENARIOS = {
   normal: {
-    name: 'Normal flow',
-    blurb: 'Steady pilgrim arrivals, shuttles on schedule, emergency route clear.',
-    chain: ['Inflow steady', 'Outflow keeps pace', 'Density stable', 'Risk stays LOW'],
-    init: { A: 1450, B: 300, C: 100 },
-    inflowA: () => 100, shuttles: () => 4, delay: () => 2, vehicles: () => 55,
-    blocked: () => false, opposing: () => false, temp: t => 33 + 2 * ss(0, 60, t)
+    name: 'Normal flow', clip: 'Training_9',
+    blurb: 'Real clip: a steady crowd of about 316 people, mostly seated. Transport on schedule.',
+    stressor: 'None',
+    chain: ['Count steady (≈316)', 'No counter-flow labelled', 'Density low', 'Risk stays LOW'],
+    init: { B: 300, C: 100 },
+    queue: () => 3, delay: () => 2, shuttles: () => 4, vehicles: () => 55, Bcrowd: () => 300,
+    blocked: () => false, temp: f => 33 + 2 * f
   },
   rising: {
-    name: 'Rising inflow',
-    blurb: 'Pilgrim arrivals climb steadily toward the corridor.',
-    chain: ['Inflow ↑', 'Crowd count ↑', 'Density ↑', 'Mean speed ↓', 'Risk ↑'],
-    blurbExtra: 'The arrival wave eases after t≈45, but a corridor that has already jammed clears slowly.',
-    init: { A: 1500, B: 320, C: 110 },
-    inflowA: (t, j) => 100 + 70 * ss(4 + j, 26 + j, t) - 45 * ss(40 + j, 54 + j, t),
-    shuttles: (t, j) => 4 + 1.6 * ss(14 + j, 36 + j, t),
-    delay: (t, j) => 2 + 3 * ss(18 + j, 40 + j, t),
-    vehicles: (t, j) => 55 + 55 * ss(12 + j, 38 + j, t),
-    blocked: () => false, opposing: () => false, temp: t => 35 + 3 * ss(0, 60, t)
+    name: 'Rising inflow', clip: 'Training_3',
+    blurb: 'Real clip: the count climbs from 112 to 164 people in 25 seconds (+46%).',
+    stressor: 'Shuttle arrivals rise slightly',
+    chain: ['Count ↑ 112 → 164', 'Net change positive', 'Density ↑', 'Risk ↑'],
+    init: { B: 320, C: 110 },
+    queue: f => 3 + 5 * ss(0.3, 1, f), delay: f => 2 + 2 * ss(0.4, 1, f), shuttles: f => 4 + 1.5 * f, vehicles: f => 55 + 35 * f, Bcrowd: f => 320 + 180 * f,
+    blocked: () => false, temp: f => 35 + 2 * f
   },
   blocked: {
-    name: 'Blocked emergency route',
-    blurb: 'An obstruction closes the emergency lane partway through the run.',
-    chain: ['Emergency lane obstructed', 'Spill-over cannot clear', 'Emergency-access risk ↑', 'Network risk ↑'],
-    init: { A: 1700, B: 420, C: 200 },
-    inflowA: () => 110, shuttles: () => 4.2, delay: () => 2.5, vehicles: () => 70,
-    blocked: (t, j) => t >= 14 + j, opposing: () => false, temp: () => 36
+    name: 'Blocked emergency route', clip: 'Training_12',
+    blurb: 'Real clip: the densest HAJJv2 scene, 1,600 → 1,800 people, with labelled counter-flow.',
+    stressor: 'Emergency lane blocked from about 8 s',
+    chain: ['Real count 1,600 → 1,800', 'Counter-flow labelled', 'Emergency lane blocked (synthetic)', 'Network risk ↑'],
+    init: { B: 420, C: 200 },
+    queue: () => 6, delay: () => 3, shuttles: () => 4.2, vehicles: () => 70, Bcrowd: f => 420 + 120 * f,
+    blocked: f => f >= 0.32, temp: () => 36
   },
   shuttle: {
-    name: 'Shuttle delay',
-    blurb: 'Shuttle turnaround slows, buses stack up and waiting crowds build.',
-    chain: ['Shuttle delay ↑', 'Bus queue ↑', 'Waiting crowd at interchange ↑', 'Crowd–traffic interaction ↑', 'Risk ↑'],
-    init: { A: 1650, B: 450, C: 120 },
-    inflowA: () => 104, shuttles: () => 5.4, delay: (t, j) => 2 + 11 * ss(10 + j, 20 + j, t), vehicles: () => 70,
-    blocked: () => false, opposing: () => false, temp: () => 36
+    name: 'Shuttle delay', clip: 'Training_10',
+    blurb: 'Real clip: about 190 people with vehicles or wheelchairs moving through the crowd.',
+    stressor: 'Shuttle turnaround slows, buses queue',
+    chain: ['Moving vehicles labelled in crowd', 'Shuttle delay ↑ (synthetic)', 'Bus queue ↑ (synthetic)', 'Risk ↑'],
+    init: { B: 450, C: 120 },
+    queue: f => 4 + 22 * ss(0.15, 0.8, f), delay: f => 2 + 11 * ss(0.15, 0.7, f), shuttles: () => 5.4, vehicles: () => 70, Bcrowd: f => 450 + 700 * ss(0.2, 1, f),
+    blocked: () => false, temp: () => 36
   },
   opposing: {
-    name: 'Opposing pedestrian flow',
-    blurb: 'A counter-flow enters the corridor and slows everyone down.',
-    chain: ['Counter-flow enters corridor', 'Mean speed ↓', 'Outflow ↓', 'Density ↑', 'Risk ↑'],
-    init: { A: 1750, B: 350, C: 110 },
-    inflowA: () => 112, shuttles: () => 4, delay: () => 2.5, vehicles: () => 60,
-    blocked: () => false, opposing: (t, j) => t >= 10 + j, temp: () => 36
+    name: 'Opposing pedestrian flow', clip: 'Testing_12',
+    blurb: 'Real clip: about 1,700 people; around 22 per frame labelled moving opposite or across the crowd.',
+    stressor: 'None',
+    chain: ['Real count ≈1,700', 'Counter-flow labelled every frame', 'Density high', 'Risk ↑'],
+    init: { B: 350, C: 110 },
+    queue: () => 4, delay: () => 2.5, shuttles: () => 4, vehicles: () => 60, Bcrowd: () => 350,
+    blocked: () => false, temp: () => 36
   },
   traffic: {
-    name: 'Traffic congestion',
-    blurb: 'Vehicle volume rises around the interchange and slows shuttle service.',
-    chain: ['Vehicle flow ↑', 'Pedestrian–vehicle interaction ↑', 'Shuttle service slows', 'Bus queue ↑', 'Risk ↑'],
-    init: { A: 1650, B: 400, C: 110 },
-    inflowA: () => 104, shuttles: () => 4.3, delay: () => 3, vehicles: (t, j) => 60 + 120 * ss(8 + j, 26 + j, t),
-    blocked: () => false, opposing: () => false, temp: () => 37
+    name: 'Traffic congestion', clip: 'Testing_10',
+    blurb: 'Real clip: 190 → 84 people with moving vehicles labelled among pedestrians.',
+    stressor: 'Road traffic around the interchange rises',
+    chain: ['Moving vehicles labelled in crowd', 'Road traffic ↑ (synthetic)', 'Crowd–traffic interaction ↑', 'Risk ↑'],
+    init: { B: 400, C: 110 },
+    queue: f => 4 + 10 * ss(0.3, 1, f), delay: f => 3 + 5 * ss(0.3, 1, f), shuttles: () => 4.3, vehicles: f => 60 + 120 * ss(0.1, 0.7, f), Bcrowd: f => 400 + 150 * f,
+    blocked: () => false, temp: () => 37
   }
 };
 
-/* ---------- 4. INTERVENTIONS ---------- */
+/* ---------- 4. INTERVENTIONS (modelled effects: assumptions, not measurements) ---------- */
 const INTERVENTIONS = {
-  reroute:   { name: 'Pedestrian rerouting', short: 'Reroute pedestrians', effect: 'Sends 30% of Zone A arrivals along the alternate walkway into Zone B.' },
+  reroute:   { name: 'Pedestrian rerouting', short: 'Reroute pedestrians', effect: 'Sends 3% of the Zone A crowd per second along the alternate walkway into Zone B.' },
   throttle:  { name: 'Shuttle throttling', short: 'Slow shuttle arrivals', effect: 'Cuts incoming shuttles by 40%, so fewer buses queue and fewer passengers are dropped into the interchange.' },
-  gate:      { name: 'Open alternate gate', short: 'Open alternate gate', effect: 'Adds 25% effective capacity and 35% more exit throughput to Zone A.' },
+  gate:      { name: 'Open alternate gate', short: 'Open alternate gate', effect: 'Adds 25% capacity to Zone A and lets 1% of its crowd per second exit through the extra gate.' },
   emergency: { name: 'Activate emergency route', short: 'Activate emergency route', effect: 'Clears and opens the emergency lane so Zone C can drain.' },
-  diversion: { name: 'Traffic diversion', short: 'Divert traffic', effect: 'Diverts 45% of general vehicles away from the interchange.' }
+  diversion: { name: 'Traffic diversion', short: 'Divert traffic', effect: 'Diverts 45% of road vehicles away from the interchange.' }
 };
 const NO_INTERVENTIONS = () => ({ reroute: false, throttle: false, gate: false, emergency: false, diversion: false });
 
-/* ---------- 5. STATE ---------- */
+/* ---------- 5. FORECASTERS for the Zone A count (same three baselines as the repo benchmark) ---------- */
+const FORECASTERS = {
+  persistence: { name: 'Persistence (last count)', f: (hist) => hist[hist.length - 1] },
+  mean3: { name: 'Mean of last 3 counts', f: (hist) => (hist.slice(-3).reduce((a, b) => a + b, 0) / Math.min(3, hist.length)) },
+  trend5: {
+    name: 'Linear trend of last 5 counts', f: (hist, k) => {
+      const r = hist.slice(-5); if (r.length < 2) return r[r.length - 1];
+      let sl = 0; for (let i = 1; i < r.length; i++) sl += r[i] - r[i - 1];
+      return Math.max(0, r[r.length - 1] + (sl / (r.length - 1)) * k);
+    }
+  }
+};
+
+/* ---------- 6. STATE ---------- */
 function speedFrom(d) { return clamp(1.3 * (1 - 0.72 * Math.min(d, 1.25) ** 2), 0.12, 1.35); }
+const clipOf = key => HAJJ[SCENARIOS[key].clip];
 
 function newState(key = CFG.scenario, seed = CFG.seed) {
-  const sc = SCENARIOS[key];
+  const sc = SCENARIOS[key], clip = HAJJ[sc.clip];
+  CFG.steps = clip.readings.length - 1;         // run length = real clip length
   const s = {
-    scenario: key, seed, rng: seed | 0, t: 0, zones: {},
+    scenario: key, clip: sc.clip, seed, rng: seed | 0, t: 0, steps: CFG.steps, zones: {},
     interventions: NO_INTERVENTIONS(),
     failures: { camera: false, gps: false, gate: false },
-    history: [], alerts: [], labels: {}, log: [], flags: {}, pending: null, dismissed: {}
+    history: [], alerts: [], labels: {}, log: [], flags: {}, pending: null, dismissed: {},
+    mA: 1, rerouted: 0, forecast: false, fk: 0, obs: []
   };
-  s.jitter = Math.round(noise(s) * 3);
-  for (const z of ['A', 'B', 'C']) {
-    s.zones[z] = { id: z, crowd: sc.init[z], capacity: CFG.zones[z].capacity, inflow: 0, outflow: 0, speed: 1.2 };
-  }
-  s.zones.A.inflow = sc.inflowA(0, s.jitter); s.zones.A.outflow = s.zones.A.inflow;
-  s.bus_queue = 2;
-  s.shuttle_delay = sc.delay(0, s.jitter);
-  s.vehicle_flow = sc.vehicles(0, s.jitter);
-  s.temperature = sc.temp(0, s.jitter);
-  s.opposing = false; s.emergency_blocked = false; s.emergency_route_open = true;
-  s.shuttle_count = Math.round(sc.shuttles(0, s.jitter) * 6);
+  s.zones.A = { id: 'A', capacity: CFG.zones.A.capacity, crowd: 0, raw: 0, change: 0, net: 0 };
+  s.zones.B = { id: 'B', capacity: CFG.zones.B.capacity, crowd: sc.init.B, change: 0 };
+  s.zones.C = { id: 'C', capacity: CFG.zones.C.capacity, crowd: sc.init.C, change: 0 };
+  readReal(s, 0);
+  s.zones.A.crowd = s.zones.A.raw;
+  synthetic(s, 0, 0);
   refresh(s);
   return s;
 }
 
-/* One simulation step. Every quantity is caused by another one. */
-function step(s) {
-  const sc = SCENARIOS[s.scenario], I = s.interventions, j = s.jitter;
-  const t = ++s.t;
-  const A = s.zones.A, B = s.zones.B, C = s.zones.C;
-  // always draw the same number of random numbers, so twins stay comparable
-  const r = [noise(s), noise(s), noise(s), noise(s), noise(s), noise(s)];
+/* Take the real reading for second t of the clip */
+function readReal(s, t) {
+  const R = HAJJ[s.clip].readings, r = R[Math.min(t, R.length - 1)], prev = R[Math.max(0, Math.min(t, R.length - 1) - 1)];
+  s.real = { t: r.t, count: r.count, opposite: r.opposite, different: r.different, running: r.running, stationary: r.stationary, nonhuman: r.nonhuman };
+  s.zones.A.net = t ? r.count - prev.count : 0;
+  s.zones.A.raw = r.count;
+  s.obs.push(r.count); if (s.obs.length > 5) s.obs.shift();
+}
 
-  // environment + infrastructure
-  s.temperature = sc.temp(t, j) + r[0] * 0.3;
-  s.opposing = sc.opposing(t, j);
-  s.emergency_blocked = sc.blocked(t, j) && !I.emergency;
+/* Synthetic parts (no public data exists for these) */
+function synthetic(s, t, r) {
+  const sc = SCENARIOS[s.scenario], I = s.interventions, f = t / Math.max(1, s.steps);
+  const B = s.zones.B, C = s.zones.C;
+  s.temperature = sc.temp(f) + r * 0.3;
+  s.emergency_blocked = sc.blocked(f) && !I.emergency;
   s.emergency_route_open = !s.emergency_blocked;
-
-  // ZONE A — pilgrim corridor
-  let inA = sc.inflowA(t, j) * (1 + 0.06 * r[1]);
-  const rerouted = I.reroute ? inA * 0.30 : 0;              // rerouting: A arrivals -> alternate walkway -> B
-  inA -= rerouted;
-  const capA = A.capacity * (I.gate ? 1.25 : 1);             // gate: more effective capacity
-  A.speed = speedFrom(A.crowd / capA) * (s.opposing ? 0.72 : 1);   // density up -> speed down
-  const backPressure = 1 - 0.7 * clamp((s.zones.B.density - 0.6) / 0.5);   // a full interchange backs up the corridor
-  // flow = density x speed (fundamental diagram): peaks at mid density, collapses when packed
-  const crossing = 1 - 0.3 * clamp((s.vehicle_flow - 100) / 80);   // heavy traffic at the crossing holds pedestrians
-  const outCapA = crossing * 188 * (A.crowd / capA) * A.speed * (I.gate ? 1.35 : 1) * backPressure;
-  const outA = Math.min(A.crowd + inA, outCapA * (1 + 0.04 * r[2]));
-  A.inflow = inA; A.outflow = outA;
-  A.crowd = Math.max(0, A.crowd + inA - outA);                     // inflow > outflow -> crowd up
-  const dA = A.crowd / capA;
-  const spill = dA > 0.92 ? Math.min(A.crowd, (dA - 0.92) * 350) : 0;   // over-capacity spills into the emergency lane
-  A.crowd -= spill;
-
-  // TRANSPORT — shuttles and vehicles
-  const arrivals = sc.shuttles(t, j) * (I.throttle ? 0.6 : 1) * (1 + 0.1 * r[3]);
-  s.vehicle_flow = (sc.vehicles(t, j) * (I.diversion ? 0.55 : 1) + arrivals * 4) * (1 + 0.05 * r[4]);
-  const trafficDrag = 1 + Math.max(0, s.vehicle_flow - 90) / 70;
-  s.shuttle_delay = sc.delay(t, j) * trafficDrag + s.bus_queue * 0.15;
-  const dB0 = B.crowd / B.capacity;
-  const service = 6.2 * (1 - 0.4 * clamp(dB0 - 0.6)) / (1 + s.shuttle_delay / 6);
-  s.bus_queue += arrivals;
-  const served = Math.min(s.bus_queue, service);
-  s.bus_queue = Math.min(35, s.bus_queue - served);                 // arrivals > service -> queue up (extra buses held at depot)
-  s.shuttle_count = Math.round(sc.shuttles(t, j) * 6 * (I.throttle ? 0.6 : 1));
-
-  // ZONE B — shuttle interchange (receives A outflow, rerouted walkers, shuttle drop-offs)
-  const inB = 0.65 * outA + rerouted + arrivals * 22;
-  B.speed = speedFrom(dB0);
-  const pickups = Math.min(0.3 * (B.crowd + inB), served * CFG.shuttleCapacity);
-  const roomC = clamp((1.1 - C.crowd / C.capacity) / 0.5);          // a full emergency zone backs up the interchange
-  const walkC = Math.min(B.crowd + inB - pickups, (45 * (B.speed / 1.3) + 0.04 * B.crowd) * roomC);
-  B.inflow = inB; B.outflow = pickups + walkC;
-  B.crowd = Math.max(0, B.crowd + inB - B.outflow);
-
-  // ZONE C — emergency access
-  const inC = walkC + spill;
-  const outC = Math.min(C.crowd + inC, (s.emergency_route_open ? 110 : 12) * (1 + 0.05 * r[5]));
-  C.inflow = inC; C.outflow = outC;
-  C.crowd = Math.max(0, C.crowd + inC - outC);
+  s.bus_queue = sc.queue(f) * (I.throttle ? 0.6 : 1);
+  s.shuttle_delay = sc.delay(f) * (I.throttle ? 0.8 : 1);
+  s.shuttle_count = Math.round(sc.shuttles(f) * 6 * (I.throttle ? 0.6 : 1));
+  s.vehicle_flow = sc.vehicles(f) * (I.diversion ? 0.55 : 1) * (1 + 0.04 * r);
+  const prevB = B.crowd;
+  B.crowd = sc.Bcrowd(f) * (I.throttle ? 0.85 : 1) + s.rerouted;
+  B.change = t ? B.crowd - prevB : 0;
+  const prevC = C.crowd;
+  if (s.emergency_blocked) C.crowd = Math.min(C.capacity * 1.1, C.crowd + 14);
+  else C.crowd = Math.max(sc.init.C, C.crowd - 30);
+  C.change = t ? C.crowd - prevC : 0;
+  B.speed = speedFrom(B.crowd / B.capacity);
   C.speed = speedFrom(C.crowd / C.capacity);
+}
 
+/* One step = one real second of the clip */
+function step(s) {
+  const I = s.interventions, A = s.zones.A;
+  const t = ++s.t;
+  const r = noise(s);
+  const before = A.crowd;
+  if (!s.forecast) readReal(s, t);                                   // REAL reading
+  else { s.fk++; const prev = A.raw; A.raw = FORECASTERS[CFG.forecaster].f(s.obs, s.fk); A.net = A.raw - prev; }  // twin: forecast only
+  const moved = I.reroute ? 0.03 * A.raw * s.mA : 0;                 // modelled effect of rerouting
+  s.mA = Math.max(0.5, s.mA * (I.reroute ? 0.97 : 1) * (I.gate ? 0.99 : 1));
+  s.rerouted += moved;
+  A.crowd = A.raw * s.mA;
+  A.change = A.crowd - before;
+  synthetic(s, t, r);
   refresh(s);
   return s;
 }
 
 /* Derived values, sensors, risk. Never consumes random numbers. */
 function refresh(s) {
-  const I = s.interventions, A = s.zones.A;
+  const I = s.interventions, A = s.zones.A, real = s.real;
   s.effCapA = A.capacity * (I.gate ? 1.25 : 1);
-  for (const z of ['A', 'B', 'C']) {
-    const Z = s.zones[z];
-    Z.density = Z.crowd / (z === 'A' ? s.effCapA : Z.capacity);
-  }
-  A.direction = s.opposing ? 'Mixed (opposing)' : 'North-East';
+  A.density = A.crowd / s.effCapA;
+  s.zones.B.density = s.zones.B.crowd / s.zones.B.capacity;
+  s.zones.C.density = s.zones.C.crowd / s.zones.C.capacity;
+  s.counterflow = real.opposite + real.different + real.running;
+  s.counterShare = s.counterflow / Math.max(1, A.raw);
+  A.direction = s.counterShare >= 0.05 ? 'Mixed (counter-flow labelled)' : 'Single main direction';
   s.zones.B.direction = 'East'; s.zones.C.direction = 'South';
   s.gate_status = I.gate ? 'OPEN' : 'CLOSED';
   s.zone_capacity = Math.round(s.effCapA);
@@ -733,18 +798,20 @@ function refresh(s) {
   s.degraded = s.minConf < 0.75;
   Object.assign(s, computeRisk(s));
   s.level = levelOf(s.risk);
-  s.hazard = isHazard(s);
 }
 
-/* ---------- 6. RISK ENGINE (interpretable, one function) ---------- */
+/* ---------- 7. RISK ENGINE (interpretable, one function) ----------
+   Real inputs: density, flow, movement (counter-flow), the labelled-vehicle half of conflict.
+   Synthetic inputs: shuttle, road-traffic half of conflict, emergency, heat, uncertainty.   */
+const SOURCES = { density: 'real', flow: 'real', movement: 'real', shuttle: 'synthetic', conflict: 'mixed', emergency: 'synthetic', heat: 'synthetic', uncertainty: 'synthetic' };
 function computeRisk(s) {
   const A = s.zones.A, B = s.zones.B, C = s.zones.C;
   const comp = {
     density:     clamp((Math.max(A.density, B.density * 0.9, C.density * 0.9) - 0.45) / 0.55),
-    flow:        clamp((A.inflow - A.outflow) / 50),
-    movement:    clamp((1.15 - A.speed) / 0.85),
+    flow:        clamp(Math.max(0, A.change) / 50),
+    movement:    clamp(s.counterShare / 0.10),
     shuttle:     clamp(0.6 * s.bus_queue / 18 + 0.4 * s.shuttle_delay / 14),
-    conflict:    clamp(0.75 * (s.vehicle_flow / 140) * clamp(B.density / 0.7 + 0.3) + (s.opposing ? 0.35 : 0)),
+    conflict:    clamp(0.5 * clamp(s.real.nonhuman / 2) + 0.5 * 0.75 * (s.vehicle_flow / 140) * clamp(B.density / 0.7 + 0.3)),
     emergency:   s.emergency_route_open ? clamp((C.density - 0.5) / 0.5) : clamp(0.6 + 0.4 * (C.density - 0.3) / 0.6),
     heat:        clamp((s.heat_index - 32) / 14),
     uncertainty: clamp((1 - s.minConf) / 0.6)
@@ -752,7 +819,7 @@ function computeRisk(s) {
   const W = CFG.weights;
   let risk = 0;
   for (const k in comp) risk += (W[k] || 0) * comp[k];
-  const overCap = clamp((A.density - 1) / 0.25) * 0.10;   // capacity exceeded
+  const overCap = clamp((A.density - 1) / 0.25) * 0.10;
   risk = clamp(risk + overCap);
   const zoneRisk = {
     A: clamp(0.6 * comp.density + 0.2 * comp.flow + 0.2 * comp.movement + overCap),
@@ -762,15 +829,10 @@ function computeRisk(s) {
   return { risk, comp, overCap, zoneRisk };
 }
 
-/* Synthetic ground-truth label: "this situation was dangerous".
-   Defined from density + speed only, NOT from the risk score. */
-function isHazard(s) {
-  return ['A', 'B'].some(z => s.zones[z].density >= CFG.hazardRule.density && s.zones[z].speed <= CFG.hazardRule.speed);
-}
-
-/* ---------- 7. FORECAST + WHAT-IF (always on a cloned twin) ---------- */
+/* ---------- 8. FORECAST + WHAT-IF (always on a cloned twin that cannot see future readings) ---------- */
 function cloneState(s) {
   const c = deep({ ...s, history: [], alerts: [], log: [], labels: {} });
+  c.forecast = true; c.fk = 0;
   return c;
 }
 function project(s, h, apply) {
@@ -790,7 +852,7 @@ function compareInterventions(s, h = CFG.horizon) {
   return { base, rows };
 }
 
-/* Counterfactual twin: same seed, same scenario, same failures, no interventions */
+/* Counterfactual: the same real clip with no interventions */
 function counterfactual(s) {
   const c = newState(s.scenario, s.seed);
   c.failures = { ...s.failures }; refresh(c);
@@ -799,47 +861,40 @@ function counterfactual(s) {
   return path;
 }
 
-/* ---------- 8. HORIZON EXPERIMENT ----------
-   Question: how far ahead can we forecast "this situation was dangerous"
-   and still be right often enough?
-   Forecaster: simple trend extrapolation of the risk score (a stand-in for a
-   future trained temporal model; it does NOT peek at the simulator).
-   Truth: the synthetic hazard label at t+h.                                  */
-function horizonExperiment(seeds = 12, maxH = 12) {
-  const runs = [];
-  for (const key of Object.keys(SCENARIOS)) {
-    for (let k = 0; k < seeds; k++) {
-      const s = newState(key, CFG.seed + k * 7919);
-      const risk = [], haz = [];
-      for (let i = 0; i < CFG.steps; i++) { step(s); risk.push(s.risk); haz.push(s.hazard); }
-      runs.push({ risk, haz });
-    }
-  }
-  const out = [];
-  for (let h = 1; h <= maxH; h++) {
-    let tp = 0, fp = 0, fn = 0, tn = 0, ae = 0, n = 0;
-    for (const { risk, haz } of runs) {
-      for (let t = 3; t + h < risk.length; t++) {
-        if (haz[t]) continue;   // only situations that are not dangerous yet
-        const slope = (risk[t] - risk[t - 3]) / 3;
-        const f = clamp(risk[t] + slope * h);
-        const pred = f >= CFG.alarmThreshold;
-        const truth = haz[t + h];
-        if (pred && truth) tp++; else if (pred && !truth) fp++; else if (!pred && truth) fn++; else tn++;
-        ae += Math.abs(f - risk[t + h]); n++;
+/* ---------- 9. HORIZON TEST on real HAJJv2-CrowdCount test clips ----------
+   Same protocol as benchmarks/hajj_count_forecast.py in the MIIQAT-AI repo
+   (3-second warm-up, forecast from prior human counts), extended to h seconds ahead.
+   At h = 1 it reproduces the repo's checked-in result (persistence MAE 6.59 main, 7.48 all). */
+function horizonExperiment(maxH = 10) {
+  const test = Object.entries(HAJJ).filter(([, v]) => v.split === 'Testing');
+  const run = (subset) => {
+    const rows = [];
+    for (let h = 1; h <= maxH; h++) {
+      const err = { persistence: [], mean3: [], trend5: [] }; const rel = { persistence: [], mean3: [], trend5: [] };
+      for (const [vid, v] of test) {
+        if (subset === 'main' && vid === 'Testing_12') continue;
+        const c = v.readings.map(r => r.count);
+        for (let i = 3; i + h - 1 < c.length; i++) {
+          const hist = c.slice(0, i), truth = c[i + h - 1];
+          for (const k in err) { const f = FORECASTERS[k].f(hist, h); err[k].push(Math.abs(f - truth)); rel[k].push(Math.abs(f - truth) / truth); }
+        }
       }
+      const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+      const row = { h, n: err.persistence.length };
+      for (const k in err) { row[k] = mean(err[k]); row[k + 'Rel'] = mean(rel[k]) * 100; }
+      rows.push(row);
     }
-    const precision = tp + fp ? tp / (tp + fp) : 0;
-    const recall = tp + fn ? tp / (tp + fn) : 0;
-    const f1 = precision + recall ? 2 * precision * recall / (precision + recall) : 0;
-    out.push({ h, precision, recall, f1, mae: ae / n, samples: n, positives: tp + fn });
-  }
-  // chosen horizon = highest F1 (ties go to the shorter horizon)
-  const best = out.reduce((a, b) => (b.f1 > a.f1 + 1e-9 ? b : a));
-  return { rows: out, best, runs: runs.length };
+    return rows;
+  };
+  const main = run('main'), all = run('all');
+  const key = CFG.forecaster;
+  const ok = main.filter(r => r[key + 'Rel'] <= CFG.horizonTolerance);
+  // longest horizon whose error stays within tolerance at that horizon and every shorter one
+  let best = null; for (const r of main) { if (r[key + 'Rel'] <= CFG.horizonTolerance) best = r; else break; }
+  return { rows: main, all, best, anyOk: ok.length > 0, clips: test.length, trainClips: Object.values(HAJJ).filter(v => v.split === 'Training').length };
 }
 /*ENGINE-END*/
-if (typeof module !== 'undefined') module.exports = { CFG, DEFAULTS, SCENARIOS, INTERVENTIONS, newState, step, refresh, project, compareInterventions, counterfactual, horizonExperiment, levelOf };
+if (typeof module !== 'undefined' && module.exports) module.exports = { CFG, DEFAULTS, SCENARIOS, INTERVENTIONS, FORECASTERS, HAJJ, newState, step, refresh, project, compareInterventions, counterfactual, horizonExperiment, levelOf, setData: d => Object.assign(HAJJ, d) };
 
 /* ================================================================
    MIIQAT AI — INTERFACE
@@ -864,27 +919,28 @@ function mergeDeep(a, b) { for (const k in b) { if (b[k] && typeof b[k] === 'obj
 const savedCfg = store.get('miqaat.cfg');
 if (savedCfg) CFG = mergeDeep(deep(DEFAULTS), savedCfg);
 
-const PAGES = [['start', 'Start'], ['live', 'Live monitor'], ['map', 'Zone map'], ['why', 'Why this risk?'], ['scenarios', 'Scenarios'], ['whatif', 'What-if simulation'], ['results', '60-step results'], ['labels', 'Labels & horizon'], ['privacy', 'Privacy & sensors'], ['how', 'How it works'], ['settings', 'Settings']];
+const PAGES = [['start', 'Start'], ['live', 'Live monitor'], ['map', 'Zone map'], ['detect', 'People detection'], ['why', 'Why this risk?'], ['scenarios', 'Scenarios'], ['whatif', 'What-if simulation'], ['results', 'Run results'], ['labels', 'Labels & horizon'], ['privacy', 'Privacy & sensors'], ['how', 'How it works'], ['settings', 'Settings']];
 const COMP = {
-  density: ['Crowd density', 'Fullest zone vs its capacity'],
-  flow: ['Flow imbalance', 'Zone A inflow minus outflow'],
-  movement: ['Walking speed', 'Slower movement in Zone A'],
+  density: ['Crowd density', 'Fullest zone; Zone A vs the densest HAJJv2 frame'],
+  flow: ['Count growth', 'Rise in the Zone A count this second'],
+  movement: ['Counter-flow', 'Labelled opposite, cross-direction and running movers'],
   shuttle: ['Shuttle congestion', 'Bus queue and shuttle delay'],
-  conflict: ['Crowd–traffic interaction', 'Vehicles near a crowded interchange'],
+  conflict: ['Crowd–vehicle interaction', 'Labelled moving vehicles/wheelchairs + road traffic'],
   emergency: ['Emergency access', 'Route blocked or emergency zone filling'],
   heat: ['Heat', 'Heat index'],
   uncertainty: ['Sensor uncertainty', 'Lowest sensor confidence']
 };
-
+const SRC_LABEL = { real: 'HAJJv2 data', synthetic: 'Synthetic', mixed: 'HAJJv2 + synthetic' };
+const srcChip = k => `<span class="src src-${k}">${SRC_LABEL[k]}</span>`;
 let live = newState(CFG.scenario);
 let page = 'start', playing = null, selectedIv = 'reroute', selectedZone = 'A';
 let approvedMsg = null, lastAudit = null, horizonResult = null, demo = null, proj = null;
 
 const zn = z => CFG.zones[z].name;
-const hLabel = () => `${CFG.horizon} steps (≈${+(CFG.horizon * CFG.stepMinutes).toFixed(1)} simulated min)`;
+const hLabel = () => `${CFG.horizon} seconds`;
 const lv = l => 'lvl-' + l;
 const pill = (l, extra = '') => `<span class="pill ${lv(l)}">${l}${extra}</span>`;
-function clock(t) { const m = 16 * 60 + 40 + Math.round(t * CFG.stepMinutes); return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+function clock(t) { return '0:' + String(t).padStart(2, '0'); }
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2600); }
 
 /* ---------------- navigation ---------------- */
@@ -898,6 +954,7 @@ function go(p, noScroll) {
   document.querySelectorAll('#nav button').forEach(b => b.setAttribute('aria-current', b.dataset.go === p ? 'page' : 'false'));
   try { history.replaceState(null, '', '#' + p); } catch (e) { }
   if (!noScroll) window.scrollTo({ top: 0 });
+  if (p !== 'detect') detStop();
   render();
 }
 
@@ -905,25 +962,27 @@ function go(p, noScroll) {
 function record() {
   const s = live, A = s.zones.A;
   s.history.push({
-    t: s.t, risk: s.risk, level: s.level, hazard: s.hazard, crowdA: A.crowd, dA: A.density, dB: s.zones.B.density, dC: s.zones.C.density, queue: s.bus_queue,
+    t: s.t, risk: s.risk, level: s.level, crowdA: A.crowd, raw: A.raw, dA: A.density, dB: s.zones.B.density, dC: s.zones.C.density, queue: s.bus_queue,
     row: {
-      timestamp: s.t, zone_id: 'A', capacity: Math.round(s.effCapA), crowd_count: Math.round(A.crowd), inflow: A.inflow.toFixed(1), outflow: A.outflow.toFixed(1),
-      mean_speed: A.speed.toFixed(2), dominant_direction: A.direction, bus_queue: Math.round(s.bus_queue), emergency_route_open: s.emergency_route_open,
+      timestamp_s: s.t, video: s.clip, zone_id: 'A', reference_capacity: Math.round(s.effCapA), hajj_gt_count: A.raw,
+      crowd_count_after_interventions: Math.round(A.crowd), net_change_per_s: A.net, counterflow_labelled: +(s.real.opposite + s.real.different).toFixed(2),
+      running_labelled: s.real.running, stationary_labelled: s.real.stationary, moving_vehicles_labelled: s.real.nonhuman,
+      bus_queue_synthetic: Math.round(s.bus_queue), emergency_route_open_synthetic: s.emergency_route_open, heat_index_synthetic: s.heat_index.toFixed(1),
       camera_confidence: s.sensors.camera.conf.toFixed(2), gps_confidence: s.sensors.gps.conf.toFixed(2), gate_confidence: s.sensors.gate.conf.toFixed(2),
-      heat_index: s.heat_index.toFixed(1), intervention: Object.keys(s.interventions).filter(k => s.interventions[k]).join('+') || 'none',
-      downstream_risk: s.zoneRisk.B.toFixed(3), total_network_risk: s.risk.toFixed(3), synthetic_label: s.hazard ? 'dangerous' : 'not_dangerous'
+      intervention: Object.keys(s.interventions).filter(k => s.interventions[k]).join('+') || 'none',
+      downstream_risk: s.zoneRisk.B.toFixed(3), total_network_risk: s.risk.toFixed(3)
     }
   });
 }
 function liveStep() {
   if (live.t >= CFG.steps) return false;
   step(live); record(); checkAlerts();
-  if (live.t >= CFG.steps) { addAlert('SIMULATION COMPLETE', `All ${CFG.steps} steps finished. See 60-step results.`, 'LOW'); if (!demo) toast('Simulation complete. Open “60-step results”.'); }
+  if (live.t >= CFG.steps) { addAlert('RUN COMPLETE', `All ${CFG.steps} seconds of ${live.clip} replayed. See Run results.`, 'LOW'); if (!demo) toast('Run complete. Open “Run results”.'); }
   return true;
 }
 function play() {
   if (playing) return;
-  if (live.t >= CFG.steps) { toast('Run finished. Press Reset to start again.'); return; }
+  if (live.t >= CFG.steps) { toast('Clip finished. Press Reset to start again.'); return; }
   playing = setInterval(() => { if (!liveStep()) pause(); render(); }, CFG.playSpeedMs);
   render();
 }
@@ -950,22 +1009,23 @@ function checkAlerts() {
   const up = LEVELS.indexOf(s.level) - LEVELS.indexOf(prev);
   if (up > 0) addAlert(s.level + ' RISK', `Network risk ${r2(s.risk)}: ${LEVEL_TEXT[s.level].toLowerCase()}. Largest contributor: ${contribs(s)[0].label.toLowerCase()}.`, s.level);
   if (up < 0) addAlert('RISK EASING', `Network risk down to ${r2(s.risk)} (${s.level}).`, s.level);
-  edge('imb', A.inflow - A.outflow > 15, A.inflow - A.outflow < 5, () => addAlert('NETWORK ALERT', `Pedestrian inflow exceeds outflow in ${zn('A')} by ${n0(A.inflow - A.outflow)} per step.`, 'MEDIUM'));
-  edge('capA', A.density > 0.85, A.density < 0.8, () => addAlert('CROWD ALERT', `${zn('A')} approaching capacity (${pct(A.density)}).`, 'HIGH'));
-  edge('queue', s.bus_queue > 12, s.bus_queue < 8, () => addAlert('TRANSPORT ALERT', `Shuttle queue increasing: ${n0(s.bus_queue)} buses waiting at ${zn('B')}.`, 'MEDIUM'));
-  edge('conf', s.comp.conflict > 0.5, s.comp.conflict < 0.4, () => addAlert('TRANSPORT ALERT', 'Pedestrian–vehicle interaction rising near the interchange.', 'MEDIUM'));
-  edge('blocked', !s.emergency_route_open, s.emergency_route_open, () => addAlert('EMERGENCY ACCESS', `Emergency route in ${zn('C')} is blocked.`, 'HIGH'), () => addAlert('EMERGENCY ACCESS', 'Emergency route open again.', 'LOW'));
+  edge('imb', A.net > 15, A.net < 5, () => addAlert('CROWD ALERT', `HAJJv2 count in ${zn('A')} rose by ${n0(A.net)} people in one second (${n0(A.raw)} now).`, 'MEDIUM'));
+  edge('capA', A.density > 0.85, A.density < 0.8, () => addAlert('CROWD ALERT', `${zn('A')} at ${pct(A.density)} of the densest HAJJv2 scene.`, 'HIGH'));
+  edge('ctr', s.counterShare >= 0.05, s.counterShare < 0.03, () => addAlert('CROWD ALERT', `Counter-flow labelled in the footage: ${s.counterflow.toFixed(1)} movers per frame (${pct(s.counterShare)} of the crowd).`, 'MEDIUM'));
+  edge('queue', s.bus_queue > 12, s.bus_queue < 8, () => addAlert('TRANSPORT ALERT', `Shuttle queue increasing (synthetic): ${n0(s.bus_queue)} buses waiting at ${zn('B')}.`, 'MEDIUM'));
+  edge('conf', s.comp.conflict > 0.5, s.comp.conflict < 0.4, () => addAlert('TRANSPORT ALERT', 'Crowd–vehicle interaction rising near the interchange.', 'MEDIUM'));
+  edge('blocked', !s.emergency_route_open, s.emergency_route_open, () => addAlert('EMERGENCY ACCESS', `Emergency route in ${zn('C')} is blocked (synthetic stressor).`, 'HIGH'), () => addAlert('EMERGENCY ACCESS', 'Emergency route open again.', 'LOW'));
   maybeRecommend();
 }
 function maybeRecommend() {
   const s = live;
   if (s.pending || s.t - (s.lastDecision == null ? -99 : s.lastDecision) < 5) return;
-  const p = project(s, CFG.horizon, null).risk;
-  if (!(s.risk >= CFG.thresholds.high || p >= CFG.thresholds.high)) return;
+  const p = project(s, CFG.horizon, null).risk, thr = levelValue(CFG.recommendAt);
+  if (!(s.risk >= thr || p >= thr)) return;
   const cmp = compareInterventions(s), top = cmp.rows[0];
   if (!top || top.reduction < 3) return;
   s.pending = { key: top.key, t: s.t, before: cmp.base.risk, after: top.risk, reduction: top.reduction };
-  addAlert('RECOMMENDATION', `Recommended intervention: ${INTERVENTIONS[top.key].name}. Projected risk ${r2(cmp.base.risk)} → ${r2(top.risk)} in ${CFG.horizon} steps. Awaiting operator approval.`, 'MEDIUM');
+  addAlert('RECOMMENDATION', `Recommended intervention: ${INTERVENTIONS[top.key].name}. Projected risk ${r2(cmp.base.risk)} → ${r2(top.risk)} in ${CFG.horizon} seconds. Awaiting operator approval.`, 'MEDIUM');
 }
 function approve(key) {
   if (live.interventions[key]) return;
@@ -990,31 +1050,32 @@ function stopIv(key) {
 function recHTML() {
   const p = live.pending;
   if (!p && approvedMsg && live.t - approvedMsg.t <= 4) {
-    return `<div class="approved"><span class="tick">✓</span><div>OPERATOR APPROVED · ${esc(INTERVENTIONS[approvedMsg.key].name)} is active in the simulation from step ${approvedMsg.t}.<br><span class="muted small">Recommended intervention activated in simulation. A real deployment would need authorised human sign-off; the system never acts on its own.</span></div></div>`;
+    return `<div class="approved"><span class="tick">✓</span><div>OPERATOR APPROVED · ${esc(INTERVENTIONS[approvedMsg.key].name)} is active in the simulation from ${approvedMsg.t}s.<br><span class="muted small">Recommended intervention activated in simulation. A real deployment would need authorised human sign-off; the system never acts on its own.</span></div></div>`;
   }
   if (!p) return '';
   const top3 = contribs(live).slice(0, 2).map(c => c.label.toLowerCase()).join(' and ');
   return `<div class="card rec">
-    <div class="eyebrow" style="color:var(--brand-ink)">AI recommendation · awaiting operator · step ${p.t}</div>
+    <div class="eyebrow" style="color:var(--brand-ink)">AI recommendation · awaiting operator · ${p.t}s</div>
     <h3>Consider: ${esc(INTERVENTIONS[p.key].name)}</h3>
     <p>${esc(INTERVENTIONS[p.key].effect)} Risk is being driven mainly by ${esc(top3)}.</p>
-    <p class="muted small">Projected network risk in ${CFG.horizon} steps: <b class="mono">${r2(p.before)}</b> without action → <b class="mono">${r2(p.after)}</b> with it (${redPct(p.before, p.after).toFixed(1)}% lower, synthetic simulation). Nothing changes until you approve.</p>
+    <p class="muted small">Projected network risk in ${CFG.horizon} seconds: <b class="mono">${r2(p.before)}</b> without action → <b class="mono">${r2(p.after)}</b> with it (${redPct(p.before, p.after).toFixed(1)}% lower). Zone A uses real HAJJv2 readings; the intervention effect is modelled. Nothing changes until you approve.</p>
     <div class="btn-row"><button class="btn big" data-rec="review">Review</button><button class="btn good big" data-rec="approve">✓ Approve</button><button class="btn bad big" data-rec="dismiss">Dismiss</button></div>
   </div>`;
 }
 
 /* ---------------- chart ---------------- */
-function chartSVG({ series = [], markers = [], hazard = [], peak = null, now = null, H = 320 }) {
+function chartSVG({ series = [], markers = [], bands = [], peak = null, now = null, H = 320 }) {
   const W = 960, L = 52, R = 118, T = 18, B = 42, iw = W - L - R, ih = H - T - B, xmax = CFG.steps;
   const x = t => L + (Math.min(t, xmax) / xmax) * iw, y = v => T + (1 - v) * ih;
   let g = '';
-  hazard.forEach(t => { g += `<rect x="${x(t - 0.5).toFixed(1)}" y="${T}" width="${(iw / xmax).toFixed(1)}" height="${ih}" fill="var(--crit)" opacity=".10"/>`; });
+  bands.forEach(t => { g += `<rect x="${x(t - 0.5).toFixed(1)}" y="${T}" width="${(iw / xmax).toFixed(1)}" height="${ih}" fill="var(--crit)" opacity=".12"/>`; });
   [0, 0.25, 0.5, 0.75, 1].forEach(v => { g += `<line x1="${L}" x2="${L + iw}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 10}" y="${y(v) + 4}" text-anchor="end" font-size="12" fill="var(--ink-3)" font-family="JetBrains Mono,monospace">${v.toFixed(2)}</text>`; });
   [['medium', 'MEDIUM', 'var(--med)'], ['high', 'HIGH', 'var(--high)'], ['critical', 'CRITICAL', 'var(--crit)']].forEach(([k, lab, c]) => {
     const v = CFG.thresholds[k];
     g += `<line x1="${L}" x2="${L + iw}" y1="${y(v)}" y2="${y(v)}" stroke="${c}" stroke-dasharray="6 5" stroke-width="1.5"/><text x="${L + iw + 8}" y="${y(v) + 4}" font-size="12" font-weight="700" fill="${c}" font-family="Plus Jakarta Sans,sans-serif">${lab} ${v.toFixed(2)}</text>`;
   });
-  [1, 10, 20, 30, 40, 50, 60].filter(t => t <= xmax).concat(xmax % 10 && xmax !== 1 ? [xmax] : []).forEach(t => { g += `<text x="${x(t)}" y="${H - 14}" text-anchor="middle" font-size="12" fill="var(--ink-3)" font-family="JetBrains Mono,monospace">t=${t}</text>`; });
+  const ticks = []; for (let t = 5; t < xmax; t += 5) ticks.push(t);
+  [1].concat(ticks, [xmax]).filter((t, i, a) => a.indexOf(t) === i && (t === xmax || xmax - t >= 2)).forEach(t => { g += `<text x="${x(t)}" y="${H - 14}" text-anchor="middle" font-size="12" fill="var(--ink-3)" font-family="JetBrains Mono,monospace">${t}s</text>`; });
   markers.forEach(m => { g += `<line x1="${x(m.t)}" x2="${x(m.t)}" y1="${T}" y2="${T + ih}" stroke="var(--brand)" stroke-width="2" stroke-dasharray="3 4"/><text x="${x(m.t) + 6}" y="${T + 14 + (m.row || 0) * 16}" font-size="12" font-weight="700" fill="var(--brand-ink)" font-family="Plus Jakarta Sans,sans-serif">${esc(m.label)}</text>`; });
   series.forEach(s => {
     if (!s.pts.length) return;
@@ -1022,7 +1083,7 @@ function chartSVG({ series = [], markers = [], hazard = [], peak = null, now = n
     if (s.area && s.pts.length > 1) g += `<path d="${d} L ${x(s.pts[s.pts.length - 1].t).toFixed(1)} ${y(0)} L ${x(s.pts[0].t).toFixed(1)} ${y(0)} Z" fill="${s.color}" opacity=".08"/>`;
     g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 3}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round"/>`;
   });
-  if (peak) g += `<circle cx="${x(peak.t)}" cy="${y(peak.v)}" r="6" fill="var(--surface)" stroke="var(--crit)" stroke-width="3"/><text x="${x(peak.t)}" y="${y(peak.v) - 12}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--crit)" font-family="Plus Jakarta Sans,sans-serif">Peak ${r2(peak.v)} (t=${peak.t})</text>`;
+  if (peak) g += `<circle cx="${x(peak.t)}" cy="${y(peak.v)}" r="6" fill="var(--surface)" stroke="var(--crit)" stroke-width="3"/><text x="${x(peak.t)}" y="${y(peak.v) - 12}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--crit)" font-family="Plus Jakarta Sans,sans-serif">Peak ${r2(peak.v)} (${peak.t}s)</text>`;
   if (now) g += `<circle cx="${x(now.t)}" cy="${y(now.v)}" r="7" fill="var(--ink)" stroke="var(--surface)" stroke-width="2"/>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Risk score over time">${g}</svg>`;
 }
@@ -1038,7 +1099,7 @@ function render() {
   $('playBtn').textContent = playing ? '⏸ Pause' : '▶ Play';
   $('statusDot').className = 'dot pulse' + (live.degraded ? ' warn' : '');
   $('statusText').textContent = live.degraded ? 'DEGRADED MODE' : 'SIMULATION ONLINE';
-  ({ live: renderLive, map: renderMap, why: renderWhy, scenarios: renderScen, whatif: renderWhatIf, results: renderResults, labels: renderLabels, privacy: renderPrivacy, how: renderHow, settings: renderSettingsOnce }[page] || (() => { }))();
+  ({ live: renderLive, map: renderMap, detect: renderDetect, why: renderWhy, scenarios: renderScen, whatif: renderWhatIf, results: renderResults, labels: renderLabels, privacy: renderPrivacy, how: renderHow, settings: renderSettingsOnce }[page] || (() => { }))();
 }
 
 /* ---------------- LIVE ---------------- */
@@ -1050,48 +1111,49 @@ function gaugeHTML(r) {
 function labelHTML() {
   const cur = live.labels[live.t];
   const count = Object.keys(live.labels).length;
-  return `<div class="eyebrow">Operator label · step ${live.t}</div>
+  return `<div class="eyebrow">Operator label · second ${live.t} of ${esc(live.clip)}</div>
     <h3>Was this situation dangerous?</h3>
-    <p class="muted">Your answer is saved as a training label for a future forecasting model. ${count ? `${count} step${count > 1 ? 's' : ''} labelled so far.` : 'No labels yet.'}</p>
+    <p class="muted">Your answer is saved as a training label for a future forecasting model. ${count ? `${count} second${count > 1 ? 's' : ''} labelled so far.` : 'No labels yet.'}</p>
     <div class="btn-row">
       <button class="btn big" data-label="dangerous" aria-pressed="${cur === 'dangerous'}" ${live.t ? '' : 'disabled'}>⚠ This situation was dangerous</button>
       <button class="btn big" data-label="safe" aria-pressed="${cur === 'safe'}" ${live.t ? '' : 'disabled'}>✓ This situation was not dangerous</button>
     </div>
-    ${live.t ? '' : '<p class="muted small">Run at least one step to label it.</p>'}`;
+    ${live.t ? '' : '<p class="muted small">Replay at least one second to label it.</p>'}`;
 }
 function renderLive() {
   const s = live, A = s.zones.A, pl = levelOf(proj.risk), d = proj.risk - s.risk;
   $('recSlotLive').innerHTML = recHTML();
   $('riskCard').className = 'card ' + lv(s.level);
-  $('riskCard').innerHTML = `<div class="eyebrow">Network risk · now · t = ${s.t}</div>
+  $('riskCard').innerHTML = `<div class="eyebrow">Network risk · now · ${s.t}s into ${esc(s.clip)}</div>
     <div style="display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end"><div class="risk-num">${r2(s.risk)}</div><div style="display:flex;flex-direction:column;gap:8px;padding-bottom:8px">${pill(s.level)}<b>${LEVEL_TEXT[s.level]}</b></div></div>
     ${gaugeHTML(s.risk)}
-    <p class="muted small">Interpretable prototype risk engine · synthetic data</p>`;
+    <p class="muted small">Interpretable prototype risk engine · Zone A from real HAJJv2 readings, transport and emergency parts synthetic</p>`;
   $('forecastCard').className = 'card ' + lv(pl);
-  $('forecastCard').innerHTML = `<div class="eyebrow">Short-horizon forecast · +${CFG.horizon} steps</div>
+  $('forecastCard').innerHTML = `<div class="eyebrow">Short-horizon forecast · +${CFG.horizon} s</div>
     <div style="display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end"><div class="risk-num">${r2(proj.risk)}</div><div style="display:flex;flex-direction:column;gap:8px;padding-bottom:8px">${pill(pl)}<b>${d > 0.02 ? '↑ rising' : d < -0.02 ? '↓ easing' : '→ steady'} (${d >= 0 ? '+' : ''}${r2(d)})</b></div></div>
-    <p>Projected network risk in ${hLabel()}.</p>
-    <p class="muted small">Synthetic short-horizon simulation. The horizon is provisional; the Labels &amp; horizon page tests which horizon works best. Simulation confidence ${pct(s.minConf)} (from sensor confidence, not real-world certainty).</p>
+    <p>Projected network risk in ${hLabel()}. The twin cannot see future readings: it forecasts the Zone A count with ${esc(FORECASTERS[CFG.forecaster].name.toLowerCase())}.</p>
+    <p class="muted small">Horizon ${CFG.horizon} s is the longest at which count-forecast error stayed within ${CFG.horizonTolerance}% on the real HAJJv2 test clips (Labels &amp; horizon page). Confidence ${pct(s.minConf)} comes from sensor confidence, not real-world certainty.</p>
     <div class="btn-row"><button class="btn" data-go="why">Why?</button><button class="btn" data-go="whatif">Test an intervention</button></div>`;
   const conflict = s.comp.conflict;
-  $('kpis').innerHTML = [
-    ['Crowd · ' + zn('A'), n0(A.crowd), `of ${n0(s.effCapA)} capacity`],
-    ['Density', pct(A.density), `${zn('A')}`],
-    ['Vehicle / shuttle conflict', r2(conflict), conflict > 0.5 ? 'High interaction' : conflict > 0.25 ? 'Moderate interaction' : 'Low interaction'],
-    ['Bus queue', n0(s.bus_queue), `${s.shuttle_delay.toFixed(1)} min shuttle delay`],
-    ['Emergency access', s.emergency_route_open ? 'OPEN' : 'BLOCKED', `${zn('C')} ${pct(s.zones.C.density)} full`],
-    ['Heat index', s.heat_index.toFixed(1) + '<small> °C</small>', `Air ${s.temperature.toFixed(1)} °C`]
-  ].map(([k, v, sub], i) => `<div class="tile"><div class="eyebrow">${esc(k)}</div><div class="v" ${i === 4 && !s.emergency_route_open ? 'style="color:var(--crit)"' : ''}>${v}</div><div class="sub">${esc(sub)}</div></div>`).join('');
+  const tile = (k, v, sub, src, style = '') => `<div class="tile"><div class="eyebrow">${esc(k)}</div><div class="v" ${style}>${v}</div><div class="sub">${sub}</div>${srcChip(src)}</div>`;
+  $('kpis').innerHTML =
+    tile('Crowd · ' + zn('A'), n0(A.crowd), s.mA < 0.999 ? `HAJJv2 count ${n0(A.raw)} · after interventions (modelled)` : `human-verified count, second ${s.real.t}`, 'real') +
+    tile('Density', pct(A.density), `of the densest HAJJv2 frame (${n0(s.effCapA)})`, 'real') +
+    tile('Net change', (A.net > 0 ? '+' : '') + n0(A.net), 'people this second', 'real') +
+    tile('Counter-flow', s.counterflow.toFixed(1), `labelled movers per frame · ${pct(s.counterShare)} of crowd`, 'real') +
+    tile('Crowd–vehicle interaction', r2(conflict), `${s.real.nonhuman.toFixed(1)} labelled moving vehicles per frame`, 'mixed') +
+    tile('Bus queue', n0(s.bus_queue), `${s.shuttle_delay.toFixed(1)} min shuttle delay`, 'synthetic') +
+    tile('Emergency access', s.emergency_route_open ? 'OPEN' : 'BLOCKED', `${zn('C')} ${pct(s.zones.C.density)} full`, 'synthetic', s.emergency_route_open ? '' : 'style="color:var(--crit)"') +
+    tile('Heat index', s.heat_index.toFixed(1) + '<small> °C</small>', `Air ${s.temperature.toFixed(1)} °C`, 'synthetic');
   $('labelCard').innerHTML = labelHTML();
   const hist = s.history;
   const fpts = s.t ? [{ t: s.t, v: s.risk }].concat(proj.path.map((v, i) => ({ t: s.t + i + 1, v })).filter(p => p.t <= CFG.steps)) : [];
   $('liveChart').innerHTML = chartSVG({
     series: [{ pts: hist.map(h => ({ t: h.t, v: h.risk })), color: 'var(--ink)', area: true }, { pts: fpts, color: 'var(--brand)', dash: '2 6', w: 3 }],
-    markers: markersOf(s), hazard: hist.filter(h => h.hazard).map(h => h.t), peak: peakOf(hist), now: s.t ? { t: s.t, v: s.risk } : null
-  }) + `<div class="chart-legend"><span><i></i>Network risk</span><span><i style="background:var(--brand)"></i>Short-horizon forecast</span><span><i style="background:var(--brand);height:12px;width:3px"></i>Operator-approved intervention</span><span><i style="background:var(--crit);opacity:.25;height:12px"></i>Synthetic “dangerous” label</span></div>`;
-  $('alerts').innerHTML = s.alerts.length ? s.alerts.map(a => `<div class="alert ${lv(a.level)}"><span class="time">${a.clock} · t=${a.t}</span><span class="kind">${esc(a.kind)}</span><span>${esc(a.text)}</span></div>`).join('') : '<p class="muted">No alerts yet. Alerts are generated from the simulation state as it changes.</p>';
+    markers: markersOf(s), bands: Object.keys(s.labels).filter(t => s.labels[t] === 'dangerous').map(Number), peak: peakOf(hist), now: s.t ? { t: s.t, v: s.risk } : null
+  }) + `<div class="chart-legend"><span><i></i>Network risk (one point per real second)</span><span><i style="background:var(--brand)"></i>Short-horizon forecast</span><span><i style="background:var(--brand);height:12px;width:3px"></i>Operator-approved intervention</span><span><i style="background:var(--crit);opacity:.25;height:12px"></i>You labelled “dangerous”</span></div>`;
+  $('alerts').innerHTML = s.alerts.length ? s.alerts.map(a => `<div class="alert ${lv(a.level)}"><span class="time">${a.clock} · ${esc(s.clip)}</span><span class="kind">${esc(a.kind)}</span><span>${esc(a.text)}</span></div>`).join('') : '<p class="muted">No alerts yet. Alerts are generated from the readings as they change.</p>';
 }
-
 /* ---------------- MAP / DIGITAL TWIN ---------------- */
 const twin = { built: false, parts: { pedA: [], pedB: [], pedC: [], walk: [], bus: [], car: [] }, last: 0 };
 function buildTwin() {
@@ -1114,14 +1176,15 @@ function renderMap() {
     <path d="M 150 60 C 150 8, 600 8, 600 60" fill="none" stroke="${I.reroute ? 'var(--brand)' : 'var(--line-2)'}" stroke-width="${I.reroute ? 4 : 2}" stroke-dasharray="8 7"/>
     <text x="375" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="${I.reroute ? 'var(--brand-ink)' : 'var(--ink-3)'}" font-family="Plus Jakarta Sans,sans-serif">Alternate walkway ${I.reroute ? '· REROUTING ACTIVE' : '· idle'}</text>
     ${zbox('A', 30, 60, 370, 300)}${zbox('B', 440, 60, 320, 300)}${zbox('C', 790, 60, 180, 300)}
+    <rect x="150" y="${I.reroute ? 150 : 150}" width="0" height="0"/>
     <path d="M 60 225 L 380 225" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 8"/>
-    <text x="215" y="148" text-anchor="middle" font-size="13" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">pilgrim corridor → ${esc(s.zones.A.direction)}</text>
+    <text x="215" y="148" text-anchor="middle" font-size="13" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">HAJJv2 ${esc(s.clip)} · ${n0(s.zones.A.raw)} people counted this second</text>
     <rect x="404" y="180" width="32" height="90" rx="6" fill="var(--surface-2)" stroke="var(--line-2)"/>
     <text x="420" y="290" text-anchor="middle" font-size="11" fill="var(--ink-3)" font-family="Plus Jakarta Sans,sans-serif">main gate</text>
     <rect x="404" y="92" width="32" height="56" rx="6" fill="${I.gate ? 'var(--low)' : 'var(--surface-2)'}" fill-opacity="${I.gate ? .35 : 1}" stroke="${I.gate ? 'var(--low)' : 'var(--line-2)'}" stroke-width="2" ${I.gate ? '' : 'stroke-dasharray="4 3"'}/>
     <text x="420" y="164" text-anchor="middle" font-size="11" font-weight="700" fill="${I.gate ? 'var(--low)' : 'var(--ink-3)'}" font-family="Plus Jakarta Sans,sans-serif" style="paint-order:stroke" stroke="var(--surface)" stroke-width="3"><tspan x="420">alt gate</tspan><tspan x="420" dy="13">${I.gate ? 'OPEN' : 'CLOSED'}</tspan></text>
     <line x1="450" y1="300" x2="750" y2="300" stroke="var(--line-2)" stroke-width="18" stroke-linecap="round" opacity=".6"/>
-    <text x="600" y="345" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">shuttle bays · ${n0(s.bus_queue)} buses queued · ${s.shuttle_delay.toFixed(1)} min delay${I.throttle ? ' · THROTTLED' : ''}</text>
+    <text x="600" y="345" text-anchor="middle" font-size="12" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">shuttle bays · ${n0(s.bus_queue)} buses queued · ${s.shuttle_delay.toFixed(1)} min delay${I.throttle ? ' · THROTTLED' : ''} · synthetic</text>
     <line x1="950" y1="150" x2="950" y2="340" stroke="${open ? 'var(--route)' : 'var(--crit)'}" stroke-width="10" stroke-dasharray="${open ? '0' : '12 8'}" opacity=".55" stroke-linecap="round"/>
     <text x="880" y="${open ? 150 : 240}" text-anchor="middle" font-size="13" font-weight="700" fill="${open ? 'var(--route)' : 'var(--crit)'}" font-family="Plus Jakarta Sans,sans-serif" style="paint-order:stroke" stroke="var(--surface)" stroke-width="4">${open ? 'ROUTE OPEN' : '✕ BLOCKED'}</text>
     <path d="M 400 200 L 440 200" stroke="var(--ink-3)" stroke-width="2" marker-end="url(#ah)"/>
@@ -1129,7 +1192,7 @@ function renderMap() {
     <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/></marker></defs>
     <rect x="20" y="392" width="960" height="40" rx="8" fill="var(--surface-2)"/>
     <line x1="30" y1="412" x2="970" y2="412" stroke="var(--line-2)" stroke-dasharray="14 10"/>
-    <text x="30" y="456" font-size="12" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">service road · ${n0(s.vehicle_flow)} vehicles per step${I.diversion ? ' · DIVERSION ACTIVE' : ''}</text>
+    <text x="30" y="456" font-size="12" fill="var(--ink-2)" font-family="Plus Jakarta Sans,sans-serif">service road · ${n0(s.vehicle_flow)} vehicles per minute · synthetic${I.diversion ? ' · DIVERSION ACTIVE' : ''}</text>
     ${I.diversion ? '<path d="M 330 432 C 330 460, 280 468, 250 470" fill="none" stroke="var(--brand)" stroke-width="4" stroke-dasharray="8 6"/>' : ''}`;
   $('zoneBtns').innerHTML = ['A', 'B', 'C'].map(z => `<button class="btn" data-zone="${z}" aria-pressed="${selectedZone === z}">Zone ${z} · ${esc(zn(z))}</button>`).join('');
   renderZoneDetail();
@@ -1137,19 +1200,23 @@ function renderMap() {
 }
 function renderZoneDetail() {
   const s = live, z = selectedZone, Z = s.zones[z], zlv = levelOf(s.zoneRisk[z]);
-  const rows = [
-    ['Crowd', n0(Z.crowd)], ['Capacity', n0(z === 'A' ? s.effCapA : Z.capacity)], ['Density', pct(Z.density)],
-    ['Inflow', n0(Z.inflow) + ' / step'], ['Outflow', n0(Z.outflow) + ' / step'], ['Mean speed', Z.speed.toFixed(2) + ' m/s'], ['Direction', Z.direction]
-  ];
-  if (z === 'A') rows.push(['Alternate gate', s.gate_status]);
-  if (z === 'B') rows.push(['Bus queue', n0(s.bus_queue)], ['Shuttle delay', s.shuttle_delay.toFixed(1) + ' min'], ['Vehicle flow', n0(s.vehicle_flow) + ' / step']);
-  if (z === 'C') rows.push(['Emergency route', s.emergency_route_open ? 'OPEN' : 'BLOCKED']);
+  let rows;
+  if (z === 'A') rows = [
+    ['Source', `HAJJv2 ${s.clip} · second ${s.real.t}`], ['HAJJv2 human-verified count', n0(Z.raw)], ['After interventions (modelled)', n0(Z.crowd)],
+    ['Reference capacity', n0(s.effCapA)], ['Density', pct(Z.density)], ['Net change', (Z.net > 0 ? '+' : '') + n0(Z.net) + ' / s'],
+    ['Moving opposite (labelled)', s.real.opposite.toFixed(1) + ' / frame'], ['Different direction (labelled)', s.real.different.toFixed(1) + ' / frame'],
+    ['Running (labelled)', s.real.running.toFixed(2) + ' / frame'], ['Sitting, standing, sleeping (labelled)', s.real.stationary.toFixed(1) + ' / frame'],
+    ['Moving vehicles or wheelchairs (labelled)', s.real.nonhuman.toFixed(2) + ' / frame'], ['Direction', Z.direction], ['Alternate gate', s.gate_status]];
+  else {
+    rows = [['Source', 'Synthetic (no public dataset)'], ['Crowd', n0(Z.crowd)], ['Capacity', n0(Z.capacity)], ['Density', pct(Z.density)], ['Change', (Z.change > 0 ? '+' : '') + n0(Z.change) + ' / s'], ['Mean speed (modelled)', Z.speed.toFixed(2) + ' m/s'], ['Direction', Z.direction]];
+    if (z === 'B') rows.push(['Bus queue', n0(s.bus_queue)], ['Shuttle delay', s.shuttle_delay.toFixed(1) + ' min'], ['Road vehicles', n0(s.vehicle_flow) + ' / min'], ['Rerouted walkers received', n0(s.rerouted)]);
+    if (z === 'C') rows.push(['Emergency route', s.emergency_route_open ? 'OPEN' : 'BLOCKED']);
+  }
   $('zoneDetail').className = 'card ' + lv(zlv);
-  $('zoneDetail').innerHTML = `<div class="eyebrow">Zone ${z} · step ${s.t}</div><h3>${esc(zn(z))}</h3>
+  $('zoneDetail').innerHTML = `<div class="eyebrow">Zone ${z} · ${s.t}s ${srcChip(z === 'A' ? 'real' : 'synthetic')}</div><h3>${esc(zn(z))}</h3>
     <div class="vars"><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
     <div style="display:flex;flex-direction:column;gap:12px"><div class="eyebrow">Risk contribution</div><div class="risk-num" style="font-size:56px">${r2(s.zoneRisk[z])}</div>${pill(zlv)}</div></div>`;
 }
-/* particle animation (visual only; uses Math.random, not the simulation seed) */
 const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function syncPool(gid, arr, target, make, draw) {
   while (arr.length < target) arr.push(make());
@@ -1167,9 +1234,9 @@ function animFrame(ts) {
   if (ts - twin.last < 33) return; twin.last = ts;
   const s = live, A = s.zones.A, P = twin.parts, mv = reduceMotion ? 0 : 1;
   const circ = (fill, r) => ({ tag: 'circle', set: (el, p) => { el.setAttribute('cx', p.x.toFixed(1)); el.setAttribute('cy', p.y.toFixed(1)); el.setAttribute('r', p.r || r); el.setAttribute('fill', p.c || fill); } });
-  const vA = (0.25 + 1.6 * A.speed / 1.3) * mv;
+  const vA = (0.25 + 1.6 * (1 - 0.6 * Math.min(1, A.density))) * mv;   // visual only
   syncPool('gPedA', P.pedA, clamp(14 + 110 * Math.min(A.density, 1.3), 8, 160), () => ({ x: R(50, 390), y: R(160, 290), dir: 1 }), circ('var(--ped)', 3.2));
-  const opp = s.opposing ? 0.28 : 0;
+  const opp = Math.min(0.4, s.counterShare * 3);   // share of dots drawn as counter-flow, from HAJJv2 labels
   P.pedA.forEach((p, i) => {
     const want = (i / P.pedA.length) < opp ? -1 : 1; p.dir = want;
     p.x += p.dir * vA * R(0.6, 1.2); p.y += R(-0.6, 0.6) * mv; p.y = clamp(p.y, 160, 292);
@@ -1207,13 +1274,13 @@ function sentence(k, s) {
   const A = s.zones.A, B = s.zones.B, C = s.zones.C;
   const fullest = [['A', A.density], ['B', B.density], ['C', C.density]].sort((a, b) => b[1] - a[1])[0];
   return {
-    density: `Density at ${pct(fullest[1])} of capacity in ${zn(fullest[0])}`,
-    flow: A.inflow - A.outflow > 1 ? `Inflow exceeds outflow in ${zn('A')} by ${n0(A.inflow - A.outflow)} per step` : 'Outflow keeps pace with inflow',
-    movement: `Mean walking speed ${A.speed.toFixed(2)} m/s in ${zn('A')}`,
-    shuttle: `${n0(s.bus_queue)} buses queued, ${s.shuttle_delay.toFixed(1)} min shuttle delay`,
-    conflict: `${n0(s.vehicle_flow)} vehicles per step near the interchange${s.opposing ? ', with opposing pedestrian flow' : ''}`,
-    emergency: s.emergency_route_open ? `Emergency zone ${pct(C.density)} full, route open` : 'Emergency route blocked',
-    heat: `Heat index ${s.heat_index.toFixed(1)} °C`,
+    density: fullest[0] === 'A' ? `${n0(A.crowd)} people in ${zn('A')}: ${pct(A.density)} of the densest HAJJv2 frame` : `${zn(fullest[0])} at ${pct(fullest[1])} of capacity (synthetic)`,
+    flow: A.change > 0.5 ? `Count rose by ${n0(A.change)} people this second` : 'Count steady or falling this second',
+    movement: `${s.counterflow.toFixed(1)} movers per frame labelled opposite, cross-direction or running (${pct(s.counterShare)} of the crowd)`,
+    shuttle: `${n0(s.bus_queue)} buses queued, ${s.shuttle_delay.toFixed(1)} min shuttle delay (synthetic)`,
+    conflict: `${s.real.nonhuman.toFixed(1)} labelled moving vehicles or wheelchairs per frame, ${n0(s.vehicle_flow)} synthetic road vehicles per minute`,
+    emergency: s.emergency_route_open ? `Emergency zone ${pct(C.density)} full, route open (synthetic)` : 'Emergency route blocked (synthetic stressor)',
+    heat: `Heat index ${s.heat_index.toFixed(1)} °C (synthetic)`,
     uncertainty: `Lowest sensor confidence ${pct(s.minConf)}`
   }[k];
 }
@@ -1222,42 +1289,44 @@ function renderWhy() {
   const trend = s.history.length > 3 ? s.risk - s.history[s.history.length - 4].risk : 0;
   $('whyTitle').textContent = `Why is risk ${s.level} (${r2(s.risk)})${trend > 0.02 ? ' and increasing' : trend < -0.02 ? ' and easing' : ''}?`;
   const tagOf = v => v >= 0.66 ? ['HIGH', 'HIGH'] : v >= 0.33 ? ['MODERATE', 'MEDIUM'] : ['LOW', 'LOW'];
-  $('whyCard').innerHTML = `<div class="eyebrow">Contribution of each input · step ${s.t}</div>
-    <div class="bars">${cs.map(c => { const [tag, l] = tagOf(c.value); return `<div class="bar-row ${lv(l)}"><div class="lab">${c.label}<small>${COMP[c.key][1]} · weight ${CFG.weights[c.key].toFixed(2)}</small></div><div class="track"><div class="fill" style="width:${(c.value * 100).toFixed(1)}%"></div></div><div class="tag">${tag} +${c.weighted.toFixed(2)}</div></div>`; }).join('')}
+  $('whyCard').innerHTML = `<div class="eyebrow">Contribution of each input · ${s.t}s</div>
+    <div class="bars">${cs.map(c => { const [tag, l] = tagOf(c.value); return `<div class="bar-row ${lv(l)}"><div class="lab">${c.label} ${srcChip(SOURCES[c.key])}<small>${COMP[c.key][1]} · weight ${CFG.weights[c.key].toFixed(2)}</small></div><div class="track"><div class="fill" style="width:${(c.value * 100).toFixed(1)}%"></div></div><div class="tag">${tag} +${c.weighted.toFixed(2)}</div></div>`; }).join('')}
     ${s.overCap > 0 ? `<div class="bar-row lvl-CRITICAL"><div class="lab">Capacity exceeded<small>Zone A above 100%</small></div><div class="track"><div class="fill" style="width:${s.overCap * 1000}%"></div></div><div class="tag">+${s.overCap.toFixed(2)}</div></div>` : ''}</div>
     <p class="mono" style="font-size:15px">Sum of weighted contributions = <b>${r2(s.risk)}</b> → ${s.level}</p>`;
   $('whyTop').className = 'card ' + lv(s.level);
   $('whyTop').innerHTML = `<div class="eyebrow">${s.level} risk · ${r2(s.risk)}</div><h3>Main contributors</h3>
     <ol style="margin:0;padding-left:24px;display:flex;flex-direction:column;gap:10px;font-size:18px">${cs.slice(0, 5).map(c => `<li>${esc(sentence(c.key, s))}</li>`).join('')}</ol>
     <div class="tiles"><div class="tile"><div class="eyebrow">Simulation confidence</div><div class="v">${pct(s.minConf)}</div><div class="sub">From sensor confidence. Not real-world certainty.</div></div>
-    <div class="tile"><div class="eyebrow">Forecast horizon</div><div class="v">${CFG.horizon}<small> steps</small></div><div class="sub">Short-horizon · set on the Labels page</div></div>
-    <div class="tile"><div class="eyebrow">Projected risk</div><div class="v">${r2(proj.risk)}</div><div class="sub">${levelOf(proj.risk)} in ${CFG.horizon} steps</div></div></div>`;
+    <div class="tile"><div class="eyebrow">Forecast horizon</div><div class="v">${CFG.horizon}<small> s</small></div><div class="sub">Measured on real HAJJv2 test clips</div></div>
+    <div class="tile"><div class="eyebrow">Projected risk</div><div class="v">${r2(proj.risk)}</div><div class="sub">${levelOf(proj.risk)} in ${CFG.horizon} s</div></div></div>`;
   const A = s.zones.A;
-  const grp = (title, rows) => `<div><div class="eyebrow" style="margin-bottom:10px">${title}</div><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`;
+  const grp = (title, src, rows) => `<div><div class="eyebrow" style="margin-bottom:10px">${title} ${srcChip(src)}</div><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl></div>`;
   $('vars').innerHTML =
-    grp('Crowd · Zone A', [['crowd_count', n0(A.crowd)], ['capacity', n0(A.capacity)], ['crowd_density', pct(A.density)], ['inflow', A.inflow.toFixed(1)], ['outflow', A.outflow.toFixed(1)], ['mean_speed', A.speed.toFixed(2)], ['dominant_direction', A.direction]]) +
-    grp('Transport', [['shuttle_count', s.shuttle_count], ['shuttle_capacity', CFG.shuttleCapacity], ['bus_queue', n0(s.bus_queue)], ['shuttle_delay', s.shuttle_delay.toFixed(1) + ' min'], ['vehicle_flow', n0(s.vehicle_flow)]]) +
-    grp('Infrastructure', [['gate_status', s.gate_status], ['emergency_route_open', s.emergency_route_open ? 'TRUE' : 'FALSE'], ['zone_capacity', n0(s.zone_capacity)]]) +
-    grp('Environment', [['temperature', s.temperature.toFixed(1) + ' °C'], ['heat_index', s.heat_index.toFixed(1) + ' °C']]) +
-    grp('Network', [['zone_B_crowd', n0(s.zones.B.crowd)], ['zone_B_density', pct(s.zones.B.density)], ['zone_C_crowd', n0(s.zones.C.crowd)], ['zone_C_density', pct(s.zones.C.density)], ['downstream_risk (B)', r2(s.zoneRisk.B)]]) +
-    grp('Output', [['total_network_risk', r2(s.risk)], ['risk_level', s.level], ['synthetic_label', s.hazard ? 'dangerous' : 'not dangerous']]);
+    grp('Crowd · Zone A', 'real', [['video', s.clip], ['time_s', s.real.t], ['hajj_gt_count', n0(A.raw)], ['crowd_count (after interventions)', n0(A.crowd)], ['reference_capacity', n0(s.effCapA)], ['crowd_density', pct(A.density)], ['net_change_per_s', A.net], ['moving_opposite / frame', s.real.opposite.toFixed(2)], ['different_direction / frame', s.real.different.toFixed(2)], ['running / frame', s.real.running.toFixed(2)], ['stationary / frame', s.real.stationary.toFixed(1)], ['moving_non_human / frame', s.real.nonhuman.toFixed(2)], ['dominant_direction', A.direction]]) +
+    grp('Transport', 'synthetic', [['shuttle_count', s.shuttle_count], ['shuttle_capacity', CFG.shuttleCapacity], ['bus_queue', n0(s.bus_queue)], ['shuttle_delay', s.shuttle_delay.toFixed(1) + ' min'], ['vehicle_flow', n0(s.vehicle_flow) + ' / min']]) +
+    grp('Infrastructure', 'synthetic', [['gate_status', s.gate_status], ['emergency_route_open', s.emergency_route_open ? 'TRUE' : 'FALSE'], ['zone_capacity', n0(s.zone_capacity)]]) +
+    grp('Environment', 'synthetic', [['temperature', s.temperature.toFixed(1) + ' °C'], ['heat_index', s.heat_index.toFixed(1) + ' °C']]) +
+    grp('Network', 'synthetic', [['zone_B_crowd', n0(s.zones.B.crowd)], ['zone_B_density', pct(s.zones.B.density)], ['zone_C_crowd', n0(s.zones.C.crowd)], ['zone_C_density', pct(s.zones.C.density)], ['downstream_risk (B)', r2(s.zoneRisk.B)]]) +
+    grp('Output', 'mixed', [['total_network_risk', r2(s.risk)], ['risk_level', s.level]]);
 }
-
 /* ---------------- SCENARIOS ---------------- */
 function renderScen() {
-  $('scenGrid').innerHTML = Object.entries(SCENARIOS).map(([k, sc]) => `<div class="card scen ${live.scenario === k ? 'active' : ''}">
-    <div class="eyebrow">${live.scenario === k ? 'Loaded now' : 'Scenario'}</div><h3>${esc(sc.name)}</h3><p class="muted">${esc(sc.blurb)} ${sc.blurbExtra ? esc(sc.blurbExtra) : ''}</p>
+  $('scenGrid').innerHTML = Object.entries(SCENARIOS).map(([k, sc]) => {
+    const clip = HAJJ[sc.clip], c = clip.readings.map(r => r.count);
+    return `<div class="card scen ${live.scenario === k ? 'active' : ''}">
+    <div class="eyebrow">${live.scenario === k ? 'Loaded now' : 'Scenario'}</div><h3>${esc(sc.name)}</h3><p class="muted">${esc(sc.blurb)}</p>
+    <dl class="scen-src"><dt>${srcChip('real')}</dt><dd>HAJJv2 ${esc(sc.clip)} · ${clip.readings.length} s · ${n0(Math.min(...c))}–${n0(Math.max(...c))} people</dd><dt>${srcChip('synthetic')}</dt><dd>${esc(sc.stressor)}</dd></dl>
     <div class="chain">${sc.chain.map(c => `<span>${esc(c)}</span>`).join('<em>→</em>')}</div>
-    <button class="btn ${live.scenario === k ? '' : 'primary'} big" data-scen="${k}">${live.scenario === k ? '↻ Reload this scenario' : 'Load this scenario'}</button></div>`).join('');
+    <button class="btn ${live.scenario === k ? '' : 'primary'} big" data-scen="${k}">${live.scenario === k ? '↻ Reload this scenario' : 'Load this scenario'}</button></div>`;
+  }).join('');
 }
-
 /* ---------------- WHAT-IF ---------------- */
 function renderWhatIf() {
   const s = live, cmp = compareInterventions(s), base = cmp.base;
   $('wiNow').innerHTML = `
-    <div class="tile ${lv(s.level)}"><div class="eyebrow">Live network · now</div><div class="v" style="color:var(--lv)">${r2(s.risk)}</div><div class="sub">${s.level} · step ${s.t}</div></div>
-    <div class="tile ${lv(levelOf(base.risk))}"><div class="eyebrow">If we do nothing</div><div class="v" style="color:var(--lv)">${r2(base.risk)}</div><div class="sub">${levelOf(base.risk)} · projected in ${CFG.horizon} steps</div></div>
-    <div class="tile"><div class="eyebrow">Short horizon</div><div class="v">${CFG.horizon}<small> steps</small></div><div class="sub">≈${+(CFG.horizon * CFG.stepMinutes).toFixed(1)} simulated minutes</div></div>`;
+    <div class="tile ${lv(s.level)}"><div class="eyebrow">Live network · now</div><div class="v" style="color:var(--lv)">${r2(s.risk)}</div><div class="sub">${s.level} · ${s.t}s</div></div>
+    <div class="tile ${lv(levelOf(base.risk))}"><div class="eyebrow">If we do nothing</div><div class="v" style="color:var(--lv)">${r2(base.risk)}</div><div class="sub">${levelOf(base.risk)} · projected in ${CFG.horizon} s</div></div>
+    <div class="tile"><div class="eyebrow">Short horizon</div><div class="v">${CFG.horizon}<small> s</small></div><div class="sub">measured on real HAJJv2 clips</div></div>`;
   $('ivGrid').innerHTML = Object.entries(INTERVENTIONS).map(([k, iv]) => `<button class="iv ${s.interventions[k] ? 'on' : ''}" data-iv="${k}" aria-pressed="${selectedIv === k}"><b>${esc(iv.name)}</b><small>${s.interventions[k] ? 'Active now' : esc(iv.effect)}</small></button>`).join('');
   const iv = INTERVENTIONS[selectedIv];
   if (s.interventions[selectedIv]) {
@@ -1268,13 +1337,13 @@ function renderWhatIf() {
     const la = levelOf(after.risk), lb = levelOf(base.risk);
     const side = (title, t, risk, l) => `<div class="side ${lv(l)}"><div class="eyebrow">${title}</div>
       <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap"><div class="risk-num" style="font-size:60px">${r2(risk)}</div><div style="padding-bottom:6px">${pill(l)}</div></div>
-      <dl><dt>${esc(zn('A'))} density</dt><dd>${pct(t.zones.A.density)}</dd><dt>${esc(zn('B'))} density</dt><dd>${pct(t.zones.B.density)}</dd><dt>Mean speed (A)</dt><dd>${t.zones.A.speed.toFixed(2)} m/s</dd><dt>Bus queue</dt><dd>${n0(t.bus_queue)}</dd><dt>Vehicle flow</dt><dd>${n0(t.vehicle_flow)}</dd><dt>Emergency route</dt><dd>${t.emergency_route_open ? 'OPEN' : 'BLOCKED'}</dd></dl></div>`;
+      <dl><dt>${esc(zn('A'))} crowd</dt><dd>${n0(t.zones.A.crowd)}</dd><dt>${esc(zn('A'))} density</dt><dd>${pct(t.zones.A.density)}</dd><dt>${esc(zn('B'))} density</dt><dd>${pct(t.zones.B.density)}</dd><dt>Bus queue</dt><dd>${n0(t.bus_queue)}</dd><dt>Road vehicles</dt><dd>${n0(t.vehicle_flow)}</dd><dt>Emergency route</dt><dd>${t.emergency_route_open ? 'OPEN' : 'BLOCKED'}</dd></dl></div>`;
     const rl = red >= 0 ? (la === 'LOW' ? 'LOW' : red > 10 ? 'LOW' : 'MEDIUM') : 'CRITICAL';
     $('baCard').innerHTML = `<h3>2 · Before vs after</h3>
-      <p class="muted">Current state → ${esc(iv.name)} → simulated future state ${CFG.horizon} steps ahead → new risk. Both sides start from the live state at step ${s.t}.</p>
-      <div class="ba">${side(`Before intervention · do nothing · t+${CFG.horizon}`, bt, base.risk, lb)}
+      <p class="muted">Current state → ${esc(iv.name)} → twin ${CFG.horizon} seconds ahead → new risk. Both sides start from the live state at ${s.t}s; neither can see future HAJJv2 readings.</p>
+      <div class="ba">${side(`Before intervention · do nothing · +${CFG.horizon} s`, bt, base.risk, lb)}
         <div class="mid"><div class="arrow">→</div><div>${esc(iv.name)}</div><div class="muted small" style="font-weight:400">${esc(iv.effect)}</div></div>
-        ${side(`After intervention · t+${CFG.horizon}`, at, after.risk, la)}</div>
+        ${side(`After intervention · +${CFG.horizon} s`, at, after.risk, la)}</div>
       <div class="reduction ${lv(rl)}"><div class="eyebrow">${red >= 0 ? 'Risk reduction' : 'Risk increase'}</div><div class="big">${Math.abs(red).toFixed(1)}%</div>
         <div class="mono small muted">((${r2(base.risk)} − ${r2(after.risk)}) ÷ ${r2(base.risk)}) × 100</div></div>
       <div class="btn-row"><button class="btn good big" data-approve="${selectedIv}">✓ Approve ${esc(iv.name.toLowerCase())} (operator)</button></div>
@@ -1288,21 +1357,19 @@ function renderWhatIf() {
   $('recSlotWhatif').innerHTML = recHTML();
   const act = Object.keys(s.interventions).filter(k => s.interventions[k]);
   $('activeCard').innerHTML = `<h3>Active interventions</h3>${act.length ? `<div class="btn-row">${act.map(k => `<button class="btn" data-stop="${k}">Switch off ${esc(INTERVENTIONS[k].name.toLowerCase())}</button>`).join('')}</div>` : '<p class="muted">None. The live simulation is running without interventions.</p>'}
-    ${s.log.length ? `<div class="tbl-wrap"><table><thead><tr><th>Step</th><th>Approved intervention</th><th class="num">Projected risk without</th><th class="num">Projected risk with</th></tr></thead><tbody>${s.log.map(l => `<tr><td class="mono">t=${l.t}</td><td>${esc(INTERVENTIONS[l.key].name)}</td><td class="num">${r2(l.before)}</td><td class="num">${l.after == null ? '–' : r2(l.after)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+    ${s.log.length ? `<div class="tbl-wrap"><table><thead><tr><th>Second</th><th>Approved intervention</th><th class="num">Projected risk without</th><th class="num">Projected risk with</th></tr></thead><tbody>${s.log.map(l => `<tr><td class="mono">${l.t}s</td><td>${esc(INTERVENTIONS[l.key].name)}</td><td class="num">${r2(l.before)}</td><td class="num">${l.after == null ? '–' : r2(l.after)}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
 }
 
 /* ---------------- RESULTS ---------------- */
 function renderResults() {
   const s = live, H = s.history;
-  $('resTitle').textContent = s.t >= CFG.steps ? 'Simulation complete' : `Results so far · t = ${s.t} / ${CFG.steps}`;
-  if (!s.t) { $('resBody').innerHTML = `<div class="card"><h3>No steps run yet</h3><p class="muted">Play the simulation, or run all ${CFG.steps} steps at once.</p><div class="btn-row"><button class="btn primary big" data-run>Run ${CFG.steps} steps now</button></div></div>`; return; }
+  $('resTitle').textContent = s.t >= CFG.steps ? 'Run complete' : `Results so far · ${s.t} of ${CFG.steps} s`;
+  if (!s.t) { $('resBody').innerHTML = `<div class="card"><h3>No seconds replayed yet</h3><p class="muted">Play the run, or replay all ${CFG.steps} seconds of ${esc(s.clip)} at once.</p><div class="btn-row"><button class="btn primary big" data-run>Run to the end now</button></div></div>`; return; }
   const twinPath = counterfactual(s);
   const pk = peakOf(H), pkLevel = levelOf(pk.v);
-  const peakCrowd = H.reduce((a, b) => b.crowdA > a.crowdA ? b : a);
+  const peakCrowd = H.reduce((a, b) => b.raw > a.raw ? b : a);
   const maxD = Math.max(...H.map(h => Math.max(h.dA, h.dB, h.dC)));
-  const hazLive = H.filter(h => h.hazard).length;
-  const c2 = newState(s.scenario, s.seed); c2.failures = { ...s.failures }; refresh(c2); let hazTwin = 0;
-  for (let i = 0; i < s.t; i++) { step(c2); if (c2.hazard) hazTwin++; }
+  const nDanger = Object.values(s.labels).filter(v => v === 'dangerous').length;
   const first = s.log[0];
   const before = first ? (H.find(h => h.t === first.t) || { risk: first.riskNow }).risk : null;
   const finalLive = s.risk, finalTwin = twinPath[twinPath.length - 1], twinPeak = Math.max(...twinPath);
@@ -1310,27 +1377,27 @@ function renderResults() {
   const redPeak = redPct(twinPeak, pk.v);
   const tile = (k, v, sub, cls = '') => `<div class="tile ${cls}"><div class="eyebrow">${k}</div><div class="v" ${cls ? 'style="color:var(--lv)"' : ''}>${v}</div><div class="sub">${sub}</div></div>`;
   $('resBody').innerHTML = `
-    ${s.t < CFG.steps ? `<div class="btn-row"><button class="btn primary big" data-run>Run remaining ${CFG.steps - s.t} steps</button></div>` : ''}
+    ${s.t < CFG.steps ? `<div class="btn-row"><button class="btn primary big" data-run>Run the remaining ${CFG.steps - s.t} s</button></div>` : ''}
     <div class="tiles">
-      ${tile('Peak risk', r2(pk.v), `${pkLevel} at t=${pk.t}`, lv(pkLevel))}
-      ${tile('Peak crowd · ' + esc(zn('A')), n0(peakCrowd.crowdA), `at t=${peakCrowd.t}`)}
+      ${tile('Peak risk', r2(pk.v), `${pkLevel} at ${pk.t}s`, lv(pkLevel))}
+      ${tile('Peak HAJJv2 count · ' + esc(zn('A')), n0(peakCrowd.raw), `human-verified, at ${peakCrowd.t}s of ${esc(s.clip)}`)}
       ${tile('Maximum density', pct(maxD), 'any zone')}
-      ${tile('Total alerts', s.alerts.length, 'generated from state')}
-      ${tile('Interventions applied', s.log.length, s.log.length ? s.log.map(l => `${INTERVENTIONS[l.key].short} (t=${l.t})`).join(', ') : 'none')}
-      ${tile('Steps labelled dangerous', `${hazLive}<small> vs ${hazTwin}</small>`, 'this run vs no-intervention twin (synthetic label)')}
+      ${tile('Total alerts', s.alerts.length, 'generated from the readings')}
+      ${tile('Interventions applied', s.log.length, s.log.length ? s.log.map(l => `${INTERVENTIONS[l.key].short} (${l.t}s)`).join(', ') : 'none')}
+      ${tile('Seconds you labelled dangerous', nDanger, 'operator labels, saved for training')}
     </div>
     <div class="card"><h3>Before vs after</h3>
       <div class="tiles">
-        ${tile('Risk before intervention', before == null ? '–' : r2(before), first ? `at t=${first.t}, when ${INTERVENTIONS[first.key].short.toLowerCase()} was approved` : 'no intervention approved', before == null ? '' : lv(levelOf(before)))}
-        ${tile('Risk now, with intervention', r2(finalLive), `${s.level} at t=${s.t}`, lv(s.level))}
-        ${tile('Same step, no intervention', r2(finalTwin), `${levelOf(finalTwin)} · counterfactual twin`, lv(levelOf(finalTwin)))}
+        ${tile('Risk before intervention', before == null ? '–' : r2(before), first ? `at ${first.t}s, when ${INTERVENTIONS[first.key].short.toLowerCase()} was approved` : 'no intervention approved', before == null ? '' : lv(levelOf(before)))}
+        ${tile('Risk now, with intervention', r2(finalLive), `${s.level} at ${s.t}s`, lv(s.level))}
+        ${tile('Same second, no intervention', r2(finalTwin), `${levelOf(finalTwin)} · same real readings, nothing changed`, lv(levelOf(finalTwin)))}
       </div>
-      ${s.log.length ? `<div class="reduction ${lv(redFinal > 0 ? 'LOW' : 'MEDIUM')}"><div class="eyebrow">Risk reduction vs twin</div><div class="big">${redFinal.toFixed(1)}%</div><div class="mono small muted">((${r2(finalTwin)} − ${r2(finalLive)}) ÷ ${r2(finalTwin)}) × 100 · peak ${r2(twinPeak)} → ${r2(pk.v)} (${redPeak.toFixed(1)}% lower)</div></div>` : '<p class="note"><b>No intervention approved yet.</b> Approve one on the What-if page to see a before vs after comparison.</p>'}
+      ${s.log.length ? `<div class="reduction ${lv(redFinal > 0 ? 'LOW' : 'MEDIUM')}"><div class="eyebrow">Risk reduction vs no intervention</div><div class="big">${redFinal.toFixed(1)}%</div><div class="mono small muted">((${r2(finalTwin)} − ${r2(finalLive)}) ÷ ${r2(finalTwin)}) × 100 · peak ${r2(twinPeak)} → ${r2(pk.v)} (${redPeak.toFixed(1)}% lower)</div></div><p class="muted small">The no-intervention line is the real clip as recorded. The with-intervention line applies the modelled intervention effect to the same readings, so the difference is a model estimate, not a measurement.</p>` : '<p class="note"><b>No intervention approved yet.</b> Approve one on the What-if page to see a before vs after comparison.</p>'}
     </div>
     <div class="card"><h3>Complete risk curve</h3><div class="chart">${chartSVG({
       series: [{ pts: twinPath.map((v, i) => ({ t: i + 1, v })), color: 'var(--ink-3)', dash: '7 6', w: 2.5 }, { pts: H.map(h => ({ t: h.t, v: h.risk })), color: 'var(--ink)', area: true }],
-      markers: markersOf(s), hazard: H.filter(h => h.hazard).map(h => h.t), peak: pk
-    })}<div class="chart-legend"><span><i></i>This run</span><span><i style="background:var(--ink-3)"></i>Twin without interventions (dashed)</span><span><i style="background:var(--brand);height:12px;width:3px"></i>Approved intervention</span><span><i style="background:var(--crit);opacity:.25;height:12px"></i>Synthetic “dangerous” label</span></div></div></div>`;
+      markers: markersOf(s), bands: Object.keys(s.labels).filter(t => s.labels[t] === 'dangerous').map(Number), peak: pk
+    })}<div class="chart-legend"><span><i></i>This run</span><span><i style="background:var(--ink-3)"></i>Same clip without interventions (dashed)</span><span><i style="background:var(--brand);height:12px;width:3px"></i>Approved intervention</span><span><i style="background:var(--crit);opacity:.25;height:12px"></i>You labelled “dangerous”</span></div></div></div>`;
 }
 
 /* ---------------- LABELS + HORIZON ---------------- */
@@ -1342,48 +1409,51 @@ function csvText() {
 }
 function renderLabels() {
   const s = live, L = Object.entries(s.labels).map(([t, v]) => ({ t: +t, v, h: s.history.find(x => x.t === +t) })).filter(x => x.h).sort((a, b) => a.t - b.t);
-  const agree = L.filter(x => (x.v === 'dangerous') === x.h.hazard).length;
   const nd = L.filter(x => x.v === 'dangerous').length;
   $('labCard').innerHTML = `<h3>1 · Label situations as they happen</h3>
-    <p class="muted">Label the current step here or on the Live monitor. Each label is stored with the anonymous state at that step, in the dataset schema from the MIIQAT-AI repository.</p>
+    <p class="muted">HAJJv2 has no “dangerous” labels, so this is where they would come from: an operator marks each second. Every label is stored next to that second’s real readings, ready to train a future forecasting model.</p>
     <div class="card" style="box-shadow:none;background:var(--surface-2)">${labelHTML()}</div>
     <div class="tiles">
-      <div class="tile"><div class="eyebrow">Labelled steps</div><div class="v">${L.length}</div><div class="sub">${nd} dangerous · ${L.length - nd} not dangerous</div></div>
-      <div class="tile"><div class="eyebrow">Agreement with synthetic rule</div><div class="v">${L.length ? pct(agree / L.length) : '–'}</div><div class="sub">Rule: density ≥ ${pct(CFG.hazardRule.density)} and speed ≤ ${CFG.hazardRule.speed} m/s</div></div>
-      <div class="tile"><div class="eyebrow">Steps in dataset</div><div class="v">${s.history.length}</div><div class="sub">one row per step (Zone A)</div></div>
+      <div class="tile"><div class="eyebrow">Labelled seconds</div><div class="v">${L.length}</div><div class="sub">${nd} dangerous · ${L.length - nd} not dangerous</div></div>
+      <div class="tile"><div class="eyebrow">Rows in dataset</div><div class="v">${s.history.length}</div><div class="sub">one row per real second of ${esc(s.clip)}</div></div>
     </div>
-    ${L.length ? `<div class="tbl-wrap"><table><thead><tr><th>Step</th><th>Sim clock</th><th class="num">Risk</th><th>Level</th><th>Operator label</th><th>Synthetic rule</th></tr></thead><tbody>${L.map(x => `<tr><td class="mono">t=${x.t}</td><td class="mono">${clock(x.t)}</td><td class="num">${r2(x.h.risk)}</td><td>${x.h.level}</td><td><b>${x.v === 'dangerous' ? '⚠ dangerous' : '✓ not dangerous'}</b></td><td>${x.h.hazard ? 'dangerous' : 'not dangerous'}</td></tr>`).join('')}</tbody></table></div>` : ''}
+    ${L.length ? `<div class="tbl-wrap"><table><thead><tr><th>Second</th><th class="num">HAJJv2 count</th><th class="num">Risk</th><th>Level</th><th>Your label</th></tr></thead><tbody>${L.map(x => `<tr><td class="mono">${x.t}s</td><td class="num">${n0(x.h.raw)}</td><td class="num">${r2(x.h.risk)}</td><td>${x.h.level}</td><td><b>${x.v === 'dangerous' ? '⚠ dangerous' : '✓ not dangerous'}</b></td></tr>`).join('')}</tbody></table></div>` : ''}
     <div class="btn-row"><button class="btn primary" id="copyCsv" ${s.history.length ? '' : 'disabled'}>Copy dataset as CSV</button><button class="btn bad" id="clearLabels" ${L.length ? '' : 'disabled'}>Clear my labels</button></div>
     <textarea id="csvBox" readonly hidden style="width:100%;min-height:160px;font-family:var(--f-mono);font-size:12px;padding:12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)"></textarea>`;
-  const hr = horizonResult;
+  const hr = horizonResult, key = CFG.forecaster;
   const bestH = hr && hr.best ? hr.best.h : null;
-  $('horCard').innerHTML = `<h3>2 · Choose the forecast horizon by experiment</h3>
-    <p>How far ahead can the system warn that a situation will become dangerous, and still be right often enough? For each horizon from 1 to 12 steps, a simple trend forecaster looks at a situation that is <i>not</i> dangerous yet and predicts whether it will be labelled dangerous that many steps later. It is scored across all ${Object.keys(SCENARIOS).length} scenarios × 12 seeds. The horizon with the best F1 score wins.</p>
-    <p class="muted small">Prediction = forecast risk ≥ ${CFG.alarmThreshold.toFixed(2)}. Truth = synthetic “dangerous” label (density ≥ ${pct(CFG.hazardRule.density)} and speed ≤ ${CFG.hazardRule.speed} m/s in Zone A or B). With real data, operator and incident-review labels replace the synthetic rule and the same test runs unchanged.</p>
+  $('horCard').innerHTML = `<h3>2 · Measure the forecast horizon on real data</h3>
+    <p>How many seconds ahead can the Zone A crowd count be forecast before the error grows too large? This test replays the ${hr ? hr.clips : 9} HAJJv2-CrowdCount test clips (human-verified counts, one per second). For every horizon from 1 to 10 seconds it forecasts each count from the counts before it and measures the error.</p>
+    <p class="muted small">Same protocol as <span class="mono">benchmarks/hajj_count_forecast.py</span> in the MIIQAT-AI repository: 3-second warm-up, main test set excludes the extreme clip Testing_12. The chosen horizon is the longest one whose mean relative error stays within ${CFG.horizonTolerance}% for ${esc(FORECASTERS[key].name.toLowerCase())}.</p>
     <div class="btn-row"><button class="btn primary big" id="runHorizon">${hr ? '↻ Run the horizon test again' : 'Run the horizon test'}</button></div>
-    ${hr ? `<div class="tbl-wrap"><table><thead><tr><th>Horizon</th><th class="num">≈ minutes</th><th class="num">Precision</th><th class="num">Recall</th><th>F1</th><th class="num">Risk error (MAE)</th></tr></thead><tbody>
-      ${hr.rows.map(r => `<tr class="${r.h === bestH ? 'pick' : ''}"><td class="mono"><b>h = ${r.h}</b>${r.h === bestH ? ' ← best' : ''}${r.h === CFG.horizon ? ' · in use' : ''}</td><td class="num">${+(r.h * CFG.stepMinutes).toFixed(1)}</td><td class="num">${pct(r.precision)}</td><td class="num">${pct(r.recall)}</td>
-      <td style="min-width:180px"><div style="display:flex;gap:10px;align-items:center"><div class="track" style="flex:1"><div class="fill" style="width:${(r.f1 * 100).toFixed(1)}%;background:${r.h === bestH ? 'var(--brand)' : 'var(--ink-3)'}"></div></div><span class="mono">${r.f1.toFixed(2)}</span></div></td><td class="num">${r.mae.toFixed(3)}</td></tr>`).join('')}
+    ${hr ? `<div class="tbl-wrap"><table><thead><tr><th>Horizon</th><th class="num">Forecasts</th><th class="num">Persistence MAE</th><th class="num">Mean-of-3 MAE</th><th class="num">Trend-of-5 MAE</th><th>Relative error (${esc(key)})</th></tr></thead><tbody>
+      ${hr.rows.map(r => `<tr class="${r.h === bestH ? 'pick' : ''}"><td class="mono"><b>${r.h} s</b>${r.h === bestH ? ' ← chosen' : ''}${r.h === CFG.horizon ? ' · in use' : ''}</td><td class="num">${r.n}</td><td class="num">${r.persistence.toFixed(2)}</td><td class="num">${r.mean3.toFixed(2)}</td><td class="num">${r.trend5.toFixed(2)}</td>
+      <td style="min-width:180px"><div style="display:flex;gap:10px;align-items:center"><div class="track" style="flex:1"><div class="fill" style="width:${Math.min(100, r[key + 'Rel'] / 20 * 100).toFixed(1)}%;background:${r[key + 'Rel'] <= CFG.horizonTolerance ? 'var(--low)' : 'var(--crit)'}"></div></div><span class="mono">${r[key + 'Rel'].toFixed(1)}%</span></div></td></tr>`).join('')}
       </tbody></table></div>
-      <div class="reduction lvl-LOW" style="--lv:var(--brand);--lvs:var(--brand-soft)"><div class="eyebrow">Best horizon in this synthetic test</div><div class="big">h = ${bestH}</div><div>≈${+(bestH * CFG.stepMinutes).toFixed(1)} simulated minutes · F1 ${hr.best.f1.toFixed(2)} · ${hr.runs} runs</div></div>
-      <div class="btn-row"><button class="btn good big" id="useHorizon" ${bestH === CFG.horizon ? 'disabled' : ''}>${bestH === CFG.horizon ? `h = ${bestH} is already in use` : `Use h = ${bestH} as the forecast horizon`}</button></div>
-      <p class="muted small">This number describes the synthetic simulator only. It is a method to repeat on real labelled data, not a claim about real crowds.</p>` : ''}`;
+      <p class="note"><b>Check against the repository.</b> At 1 second, persistence MAE here is ${hr.rows[0].persistence.toFixed(2)} people on the main test set and ${hr.all[0].persistence.toFixed(2)} on all test clips, the same values checked in to the MIIQAT-AI repository (6.59 and 7.48).</p>
+      ${bestH ? `<div class="reduction lvl-LOW" style="--lv:var(--brand);--lvs:var(--brand-soft)"><div class="eyebrow">Measured horizon</div><div class="big">${bestH} s</div><div>${esc(FORECASTERS[key].name)} · ${hr.best[key + 'Rel'].toFixed(1)}% mean relative error · MAE ${hr.best[key].toFixed(1)} people</div></div>
+      <div class="btn-row"><button class="btn good big" id="useHorizon" ${bestH === CFG.horizon ? 'disabled' : ''}>${bestH === CFG.horizon ? `${bestH} s is already in use` : `Use ${bestH} s as the forecast horizon`}</button></div>` : `<p class="note"><b>No horizon meets ${CFG.horizonTolerance}%.</b> Raise the tolerance in Settings or choose another forecaster.</p>`}
+      <p class="muted small">This measures how far ahead crowd counts can be forecast on these clips. It does not measure how early danger can be predicted; that needs danger labels like the ones collected above.</p>` : ''}`;
 }
-
 /* ---------------- PRIVACY ---------------- */
-const ALLOWED = new Set(['timestamp', 'zones', 'zone_id', 'capacity', 'crowd_count', 'density', 'inflow', 'outflow', 'mean_speed', 'dominant_direction', 'transport', 'bus_queue', 'shuttle_delay', 'vehicle_flow', 'infrastructure', 'gate_status', 'emergency_route_open', 'environment', 'heat_index', 'sensors', 'camera_confidence', 'gps_confidence', 'gate_confidence', 'privacy', 'faces_retained', 'plates_retained', 'individual_trajectories_retained', 'raw_frames_retained']);
-const IDENTITY = /face|plate|name|image|frame_id|img|track_id|person|device|phone|passport|mac_addr/i;
+const ALLOWED = new Set(['timestamp_s', 'video', 'zones', 'zone_id', 'capacity', 'crowd_count', 'density', 'net_change', 'counterflow_per_frame', 'moving_vehicles_per_frame', 'source', 'transport', 'bus_queue', 'shuttle_delay', 'vehicle_flow', 'infrastructure', 'gate_status', 'emergency_route_open', 'environment', 'heat_index', 'sensors', 'camera_confidence', 'gps_confidence', 'gate_confidence', 'detector', 'people', 'vehicles', 'other_objects', 'privacy', 'faces_retained', 'plates_retained', 'individual_trajectories_retained', 'raw_frames_retained']);
+const IDENTITY = /face|plate|name|image|frame_id|img|track_id|person_id|device|phone|passport|mac_addr/i;
 function payload() {
-  const s = live;
-  return {
-    timestamp: s.t,
-    zones: ['A', 'B', 'C'].map(z => ({ zone_id: z, capacity: Math.round(z === 'A' ? s.effCapA : s.zones[z].capacity), crowd_count: Math.round(s.zones[z].crowd), density: +s.zones[z].density.toFixed(3), inflow: +s.zones[z].inflow.toFixed(1), outflow: +s.zones[z].outflow.toFixed(1), mean_speed: +s.zones[z].speed.toFixed(2), dominant_direction: s.zones[z].direction })),
-    transport: { bus_queue: Math.round(s.bus_queue), shuttle_delay: +s.shuttle_delay.toFixed(1), vehicle_flow: Math.round(s.vehicle_flow) },
-    infrastructure: { gate_status: s.gate_status, emergency_route_open: s.emergency_route_open },
-    environment: { heat_index: +s.heat_index.toFixed(1) },
+  const s = live, A = s.zones.A;
+  const p = {
+    timestamp_s: s.t, video: s.clip,
+    zones: [
+      { zone_id: 'A', source: 'HAJJv2', capacity: Math.round(s.effCapA), crowd_count: Math.round(A.crowd), density: +A.density.toFixed(3), net_change: A.net, counterflow_per_frame: +s.counterflow.toFixed(2), moving_vehicles_per_frame: s.real.nonhuman },
+      { zone_id: 'B', source: 'synthetic', capacity: s.zones.B.capacity, crowd_count: Math.round(s.zones.B.crowd), density: +s.zones.B.density.toFixed(3) },
+      { zone_id: 'C', source: 'synthetic', capacity: s.zones.C.capacity, crowd_count: Math.round(s.zones.C.crowd), density: +s.zones.C.density.toFixed(3) }],
+    transport: { source: 'synthetic', bus_queue: Math.round(s.bus_queue), shuttle_delay: +s.shuttle_delay.toFixed(1), vehicle_flow: Math.round(s.vehicle_flow) },
+    infrastructure: { source: 'synthetic', gate_status: s.gate_status, emergency_route_open: s.emergency_route_open },
+    environment: { source: 'synthetic', heat_index: +s.heat_index.toFixed(1) },
     sensors: { camera_confidence: +s.sensors.camera.conf.toFixed(2), gps_confidence: +s.sensors.gps.conf.toFixed(2), gate_confidence: +s.sensors.gate.conf.toFixed(2) },
     privacy: { faces_retained: 0, plates_retained: 0, individual_trajectories_retained: 0, raw_frames_retained: 0 }
   };
+  if (window.__miqaatDetector && window.__miqaatDetector.lastCounts) p.detector = window.__miqaatDetector.lastCounts;
+  return p;
 }
 function keysOf(o, out = []) { if (Array.isArray(o)) o.forEach(x => keysOf(x, out)); else if (o && typeof o === 'object') for (const k in o) { out.push(k); keysOf(o[k], out); } return out; }
 function runAudit(p, planted) {
@@ -1422,19 +1492,18 @@ function renderPrivacy() {
 function renderHow() {
   const W = CFG.weights;
   $('formula').innerHTML = `<p class="mono" style="font-size:15px;line-height:2">network risk = ${Object.keys(W).map(k => `<b>${W[k].toFixed(2)}</b> × ${COMP[k][0].toLowerCase()}`).join(' + ')} + capacity-exceeded penalty (up to 0.10), clamped to [0, 1]</p>
-    <p class="muted">Each input is normalised to 0–1 before weighting. Weights sum to ${Object.values(W).reduce((a, b) => a + b, 0).toFixed(2)} and can be changed in Settings.</p>
+    <p class="muted">Each input is normalised to 0–1 before weighting. Weights sum to ${Object.values(W).reduce((a, b) => a + b, 0).toFixed(2)} and can be changed in Settings. Weights and thresholds are assumptions, not calibrated values.</p>
     <div class="btn-row">${LEVELS.map(l => pill(l, ` · ${l === 'LOW' ? '0.00' : CFG.thresholds[l.toLowerCase()].toFixed(2)}+`)).join('')}</div>
-    <p class="muted small">HIGH is reported as “elevated crowd-safety risk”; CRITICAL as “hazardous crowd state”.</p>`;
+    <p class="muted small">HIGH is reported as “elevated crowd-safety risk”; CRITICAL as “hazardous crowd state”. The system suggests an intervention from ${CFG.recommendAt} upward.</p>`;
 }
 
 /* ---------------- SETTINGS ---------------- */
 const FIELDS = [
-  ['Simulation', [['seed', 'Random seed', 'Same seed, same run', 1], ['steps', 'Steps per run', '', 1], ['stepMinutes', 'Minutes per step', 'Simulated time per step', 0.5], ['playSpeedMs', 'Play speed', 'Milliseconds per step; lower is faster', 50], ['shuttleCapacity', 'Shuttle capacity', 'Passengers per bus', 1]]],
-  ['Forecast', [['horizon', 'Forecast horizon', 'Steps ahead; set it from the horizon test', 1], ['alarmThreshold', 'Horizon-test warning level', 'Forecast risk that counts as a warning', 0.01]]],
-  ['Risk levels', [['thresholds.medium', 'MEDIUM starts at', '', 0.01], ['thresholds.high', 'HIGH starts at', 'Elevated crowd-safety risk', 0.01], ['thresholds.critical', 'CRITICAL starts at', 'Hazardous crowd state', 0.01]]],
+  ['Replay', [['seed', 'Random seed (synthetic parts)', 'Same seed, same run', 1], ['playSpeedMs', 'Play speed', 'Milliseconds per real second; 1000 = real time', 50], ['shuttleCapacity', 'Shuttle capacity', 'Passengers per bus', 1]]],
+  ['Forecast', [['horizon', 'Forecast horizon', 'Seconds ahead; set it from the horizon test', 1], ['horizonTolerance', 'Horizon test tolerance', 'Allowed mean relative count error, %', 0.5], ['forecaster', 'Zone A count forecaster', 'Used by the twin and the horizon test', Object.keys(FORECASTERS).map(k => [k, FORECASTERS[k].name])]]],
+  ['Risk levels', [['thresholds.medium', 'MEDIUM starts at', '', 0.01], ['thresholds.high', 'HIGH starts at', 'Elevated crowd-safety risk', 0.01], ['thresholds.critical', 'CRITICAL starts at', 'Hazardous crowd state', 0.01], ['recommendAt', 'Suggest an intervention from', 'Risk level now or forecast', [['MEDIUM', 'MEDIUM'], ['HIGH', 'HIGH'], ['CRITICAL', 'CRITICAL']]]]],
   ['Risk weights', Object.keys(DEFAULTS.weights).map(k => ['weights.' + k, COMP[k][0], COMP[k][1], 0.01])],
-  ['Zones', ['A', 'B', 'C'].flatMap(z => [['zones.' + z + '.name', `Zone ${z} name`, '', 'text'], ['zones.' + z + '.capacity', `Zone ${z} capacity`, 'people', 10]])],
-  ['“Dangerous” label rule (synthetic)', [['hazardRule.density', 'Density at or above', '1.00 = full capacity', 0.01], ['hazardRule.speed', 'Speed at or below', 'metres per second', 0.01]]]
+  ['Zones', [['zones.A.name', 'Zone A name', '', 'text'], ['zones.A.capacity', 'Zone A reference capacity', '1,800 = densest human-verified HAJJv2 frame', 10], ['zones.B.name', 'Zone B name', '', 'text'], ['zones.B.capacity', 'Zone B capacity', 'synthetic', 10], ['zones.C.name', 'Zone C name', '', 'text'], ['zones.C.capacity', 'Zone C capacity', 'synthetic', 10]]]
 ];
 const getP = (o, p) => p.split('.').reduce((a, k) => a[k], o);
 const setP = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
@@ -1444,9 +1513,11 @@ function buildSettings() {
   settingsBuilt = true;
   $('setForm').innerHTML = FIELDS.map(([g, fs]) => `<div class="card"><h3>${esc(g)}</h3>${g === 'Risk weights' ? '<p class="muted small" id="wsum"></p>' : ''}<div class="form-grid">${fs.map(([p, lab, hint, stepv]) => {
     const id = 'set-' + p.replace(/\./g, '-'), v = getP(CFG, p);
-    return `<label class="f" for="${id}">${esc(lab)}${hint ? `<small>${esc(hint)}</small>` : ''}${stepv === 'text' ? `<input type="text" id="${id}" data-path="${p}" value="${esc(v)}">` : `<input type="number" id="${id}" data-path="${p}" step="${stepv}" value="${v}">`}</label>`;
+    const input = Array.isArray(stepv) ? `<select id="${id}" data-path="${p}">${stepv.map(([val, txt]) => `<option value="${val}" ${val === v ? 'selected' : ''}>${esc(txt)}</option>`).join('')}</select>`
+      : stepv === 'text' ? `<input type="text" id="${id}" data-path="${p}" value="${esc(v)}">` : `<input type="number" id="${id}" data-path="${p}" step="${stepv}" value="${v}">`;
+    return `<label class="f" for="${id}">${esc(lab)}${hint ? `<small>${esc(hint)}</small>` : ''}${input}</label>`;
   }).join('')}</div></div>`).join('') +
-    `<p id="setErr" class="note" hidden></p><div class="btn-row"><button type="submit" class="btn primary big">Save and restart simulation</button><button type="button" class="btn big" id="defaultsBtn">Restore defaults</button></div>`;
+    `<p id="setErr" class="note" hidden></p><div class="btn-row"><button type="submit" class="btn primary big">Save and restart</button><button type="button" class="btn big" id="defaultsBtn">Restore defaults</button></div>`;
   updWsum();
 }
 function updWsum() { const el = $('wsum'); if (!el) return; let t = 0; document.querySelectorAll('[data-path^="weights."]').forEach(i => t += +i.value || 0); el.textContent = `Weights add up to ${t.toFixed(2)}. Keep them near 1.00 so the score stays within 0–1.`; }
@@ -1456,16 +1527,16 @@ function saveSettings(e) {
   document.querySelectorAll('#setForm [data-path]').forEach(i => setP(next, i.dataset.path, i.type === 'number' ? +i.value : i.value.trim() || getP(DEFAULTS, i.dataset.path)));
   const th = next.thresholds, err = $('setErr');
   const bad = !(th.medium > 0 && th.medium < th.high && th.high < th.critical && th.critical <= 1) ? 'Risk levels must go up: MEDIUM < HIGH < CRITICAL ≤ 1.'
-    : next.steps < 5 || next.steps > 500 ? 'Steps per run must be between 5 and 500.'
-      : next.horizon < 1 || next.horizon > 30 ? 'Forecast horizon must be between 1 and 30 steps.'
-        : next.playSpeedMs < 50 ? 'Play speed must be at least 50 ms.' : '';
+    : next.horizon < 1 || next.horizon > 15 ? 'Forecast horizon must be between 1 and 15 seconds.'
+      : !(next.horizonTolerance > 0 && next.horizonTolerance <= 100) ? 'Tolerance must be between 0 and 100%.'
+        : next.zones.A.capacity < 10 ? 'Zone A reference capacity must be at least 10.'
+          : next.playSpeedMs < 50 ? 'Play speed must be at least 50 ms.' : '';
   if (bad) { err.innerHTML = '<b>Not saved.</b> ' + esc(bad); err.hidden = false; return; }
   err.hidden = true;
-  next.steps = Math.round(next.steps); next.horizon = Math.round(next.horizon);
+  next.horizon = Math.round(next.horizon);
   CFG = next; store.set('miqaat.cfg', CFG); horizonResult = null;
-  resetSim(CFG.scenario); toast('Saved. Simulation restarted with the new settings.');
+  resetSim(CFG.scenario); toast('Saved. Restarted with the new settings.');
 }
-
 /* ---------------- EDIT TEXT ---------------- */
 const originals = {};
 document.querySelectorAll('[data-edit]').forEach(el => { originals[el.dataset.edit] = el.innerHTML; });
@@ -1484,17 +1555,17 @@ on(document, 'input', e => { const el = e.target.closest && e.target.closest('[d
 /* ---------------- DEMO MODE ---------------- */
 const fcRisk = () => project(live, CFG.horizon, null).risk;
 const DEMO = [
-  { text: () => 'Phase 1 of 11 · Normal flow. Pilgrim arrivals are steady and network risk is LOW.', page: 'live', enter() { loadScenario('rising', true); play(); }, until: () => live.t >= 10 },
-  { text: () => 'Phase 2 · Inflow begins increasing at the corridor entrance.', page: 'live', until: () => live.zones.A.density >= 0.62 || live.t >= 24 },
-  { text: () => 'Phase 3 · Crowd density rises and walking speed falls. The dots pack tighter and slow down.', page: 'map', until: () => live.zones.A.density >= 0.72 || live.t >= 28 },
-  { text: () => 'Phase 4 · The shuttle queue starts to build at the interchange.', page: 'map', until: () => live.bus_queue >= 4 || live.t >= 31 },
-  { text: () => 'Phase 5 · Pedestrian–vehicle interaction rises. The explanation shows which inputs drive the score.', page: 'why', until: () => !!live.pending || live.risk >= CFG.thresholds.high || live.t >= 45 },
-  { text: () => `Phase 6 · The short-horizon forecast reaches ${levelOf(fcRisk())} (${r2(fcRisk())} in ${CFG.horizon} steps) while current risk is ${live.level}: elevated crowd-safety risk ahead.`, page: 'live', enter() { pause(); }, wait: 5500 },
+  { text: () => `Phase 1 of 11 · Real HAJJv2 footage, clip ${live.clip}: about ${n0(live.zones.A.raw)} pilgrims, counted by hand every second. Replaying in real time.`, page: 'live', enter() { loadScenario('blocked', true); play(); }, until: () => live.t >= 4 },
+  { text: () => `Phase 2 · The real count jumps to ${n0(live.zones.A.raw)}, and counter-flow is labelled in the footage.`, page: 'live', until: () => live.t >= 7 },
+  { text: () => 'Phase 3 · The digital twin: Zone A dots scale with the real count. Zones B and C are synthetic.', page: 'map', until: () => live.t >= 9 },
+  { text: () => 'Phase 4 · Synthetic stressor: the emergency lane is blocked. No public dataset has this reading, so it is labelled synthetic.', page: 'map', until: () => !live.emergency_route_open && live.t >= 10 },
+  { text: () => 'Phase 5 · Why the risk is what it is: each bar is one input, tagged HAJJv2 data or synthetic.', page: 'why', until: () => !!live.pending || live.t >= 16 },
+  { text: () => `Phase 6 · Risk ${r2(live.risk)} is ${live.level}; the ${CFG.horizon}-second forecast is ${r2(fcRisk())}. The system acts at ${CFG.recommendAt}.`, page: 'live', enter() { pause(); }, wait: 5500 },
   { text: () => 'Phase 7 · The system recommends an intervention and waits for a human decision.', page: 'live', wait: 5000 },
   { text: () => `Phase 8 · The operator reviews the top-ranked option: ${INTERVENTIONS[demo.key].name}.`, page: 'whatif', enter() { demo.key = (live.pending || {}).key || compareInterventions(live).rows[0].key; selectedIv = demo.key; }, wait: 5000 },
-  { text: () => 'Phase 9 · What-if simulation: the intervention runs on a cloned twin and is compared with doing nothing.', page: 'whatif', enter() { setTimeout(() => $('baCard').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }), 60); }, wait: 7000 },
-  { text: () => 'Phase 10 · The operator approves. The intervention is activated in the simulation and risk falls.', page: 'live', enter() { approve(demo.key); play(); }, until: () => live.t >= CFG.steps },
-  { text: () => 'Phase 11 · Before vs after, against a twin with no intervention. Demo complete.', page: 'results' }
+  { text: () => 'Phase 9 · What-if: the intervention runs on a cloned twin that cannot see future readings, and is compared with doing nothing.', page: 'whatif', enter() { setTimeout(() => $('baCard').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }), 60); }, wait: 7000 },
+  { text: () => 'Phase 10 · The operator approves. The intervention is modelled on top of the real readings and risk falls.', page: 'live', enter() { approve(demo.key); play(); }, until: () => live.t >= CFG.steps },
+  { text: () => 'Phase 11 · Before vs after, against the same real clip with no intervention. Demo complete.', page: 'results' }
 ];
 function demoEnter(i) {
   demo.i = i; demo.clock = 0; const ph = DEMO[i];
@@ -1538,10 +1609,11 @@ on(document, 'click', e => {
   if (d.label) { if (live.t) { live.labels[live.t] = d.label; render(); toast(d.label === 'dangerous' ? `Step ${live.t} labelled: this situation was dangerous.` : `Step ${live.t} labelled: not dangerous.`); } return; }
   if (d.fail) { const k = d.fail; live.failures[k] = !live.failures[k]; refresh(live); addAlert('SENSOR', `${live.sensors[k].name}: ${live.failures[k] ? 'failure, switching to fallback. Uncertainty increased.' : 'restored.'}`, live.failures[k] ? 'HIGH' : 'LOW'); render(); return; }
   if ('run' in d) { runAll(); return; }
+  if (d.det) { detAction(d.det, b); return; }
   switch (b.id) {
     case 'playBtn': playing ? pause() : play(); break;
-    case 'stepBtn': pause(); if (!liveStep()) toast('Run finished. Press Reset to start again.'); render(); break;
-    case 'runBtn': runAll(); toast(`Ran to step ${CFG.steps}.`); break;
+    case 'stepBtn': pause(); if (!liveStep()) toast('Clip finished. Press Reset to start again.'); render(); break;
+    case 'runBtn': runAll(); toast(`Replayed all ${CFG.steps} seconds.`); break;
     case 'resetBtn': stopDemo(); resetSim(); toast('Reset to step 0.'); break;
     case 'editBtn': case 'editBtn2': toggleEdit(); break;
     case 'resetText': for (const k in edits) delete edits[k]; store.del('miqaat.text'); document.querySelectorAll('[data-edit]').forEach(el => el.innerHTML = originals[el.dataset.edit]); toast('Text restored.'); break;
@@ -1551,7 +1623,7 @@ on(document, 'click', e => {
     case 'auditBtn': lastAudit = runAudit(payload()); render(); break;
     case 'plantBtn': { const p = payload(); p.zones[0].face_crop_id = 'cam3_frame_0412.jpg'; lastAudit = runAudit(p, 'face_crop_id'); render(); break; }
     case 'runHorizon': b.textContent = 'Running…'; b.disabled = true; setTimeout(() => { horizonResult = horizonExperiment(); render(); }, 30); break;
-    case 'useHorizon': if (horizonResult) { CFG.horizon = horizonResult.best.h; store.set('miqaat.cfg', CFG); settingsBuilt = false; toast(`Forecast horizon set to ${CFG.horizon} steps.`); render(); } break;
+    case 'useHorizon': if (horizonResult && horizonResult.best) { CFG.horizon = horizonResult.best.h; store.set('miqaat.cfg', CFG); settingsBuilt = false; toast(`Forecast horizon set to ${CFG.horizon} seconds.`); render(); } break;
     case 'copyCsv': { const txt = csvText(), box = $('csvBox'); box.value = txt; box.hidden = false; const done = () => toast('Dataset copied as CSV.'); try { navigator.clipboard.writeText(txt).then(done, () => { box.select(); toast('Select-all is ready; press Ctrl/Cmd+C to copy.'); }); } catch (err) { box.select(); } break; }
     case 'clearLabels': live.labels = {}; render(); break;
     case 'defaultsBtn': CFG = deep(DEFAULTS); store.del('miqaat.cfg'); settingsBuilt = false; buildSettings(); horizonResult = null; resetSim(CFG.scenario); toast('Defaults restored.'); break;
@@ -1559,6 +1631,212 @@ on(document, 'click', e => {
 });
 on(document, 'keydown', e => { const z = e.target.closest && e.target.closest('g[data-zone]'); if (z && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); selectedZone = z.dataset.zone; renderMap(); } });
 on(document, 'submit', e => { if (e.target.id === 'setForm') saveSettings(e); });
+
+
+/* ================================================================
+   PEOPLE & OBJECT DETECTION — COCO-SSD (MobileNet v2) in TensorFlow.js
+   Runs entirely in the browser. Video never leaves the device; only
+   aggregate counts are kept (and shown in the privacy gate payload).
+   ================================================================ */
+const ASSET = 'miqaat-assets/';
+const DET_SAMPLES = {
+  v11: { label: 'HAJJv2 video 11 · road with vehicles', src: ASSET + 'media/hajj-v11.mp4', clip: 'Training_11' },
+  v10: { label: 'HAJJv2 video 10 · walkway', src: ASSET + 'media/hajj-v10.mp4', clip: 'Training_10' },
+  v12: { label: 'HAJJv2 video 12 · 1,600+ people', src: ASSET + 'media/hajj-v12.mp4', clip: 'Training_12' }
+};
+const VEHICLE_CLASSES = new Set(['car', 'bus', 'truck', 'motorcycle', 'bicycle', 'train']);
+const DET = { model: null, loading: null, kind: null, running: false, raf: 0, stream: null, img: null, url: null, minScore: 0.4, mask: true, tiles: false, fps: 0, lastCounts: null, status: 'The detector (about 19 MB) loads the first time you choose a source.', gen: 0 };
+window.__miqaatDetector = DET;
+
+function loadScript(urls) {
+  return urls.reduce((p, url) => p.catch(() => new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = url; s.async = true;
+    s.onload = () => res(url); s.onerror = () => { s.remove(); rej(new Error('Could not load ' + url)); };
+    document.head.appendChild(s);
+  })), Promise.reject());
+}
+function detSampleSrc(kind) {   // H.264 MP4 where supported (Safari, Chrome, Edge), otherwise VP9 WebM
+  const v = document.createElement('video'), base = DET_SAMPLES[kind].src.replace(/\.mp4$/, '');
+  return v.canPlayType('video/mp4; codecs="avc1.42E01E"') ? base + '.mp4' : base + '.webm';
+}
+/* Weights ship as base64 text files so every host (including artifact links) serves them */
+async function detModelHandler() {
+  const base = ASSET + 'model/';
+  const res = await fetch(base + 'model.json'); if (!res.ok) throw new Error('model.json ' + res.status);
+  const mj = await res.json(), specs = [], parts = [];
+  const paths = mj.weightsManifest.flatMap(g => { specs.push(...g.weights); return g.paths; });
+  for (let i = 0; i < paths.length; i++) {
+    detSetStatus(`Loading the model weights (part ${i + 1} of ${paths.length}, about 19 MB in total, first time only)…`);
+    const r = await fetch(base + paths[i]); if (!r.ok) throw new Error(paths[i] + ' ' + r.status);
+    const bin = atob((await r.text()).trim()), u8 = new Uint8Array(bin.length);
+    for (let j = 0; j < bin.length; j++) u8[j] = bin.charCodeAt(j);
+    parts.push(u8);
+  }
+  const all = new Uint8Array(parts.reduce((a, p) => a + p.length, 0)); let o = 0; parts.forEach(p => { all.set(p, o); o += p.length; });
+  return tf.io.fromMemory({ modelTopology: mj.modelTopology, weightSpecs: specs, weightData: all.buffer, format: mj.format || 'graph-model' });
+}
+function detSetStatus(msg, isErr) { DET.status = msg; DET.err = !!isErr; const el = $('detStatus'); if (el) { el.textContent = msg; el.classList.toggle('err', !!isErr); } }
+async function detLoadModel() {
+  if (DET.model) return DET.model;
+  if (!DET.loading) DET.loading = (async () => {
+    detSetStatus('Loading the detector code…');
+    if (!window.tf) await loadScript([ASSET + 'vendor/tf.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.22.0/tf.min.js', 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js']);
+    if (!window.cocoSsd) await loadScript([ASSET + 'vendor/coco-ssd.min.js', 'https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js']);
+    try { await tf.ready(); } catch (e) { }
+    DET.model = await cocoSsd.load({ base: 'mobilenet_v2', modelUrl: await detModelHandler() });
+    detSetStatus(`Detector ready · running on ${tf.getBackend() === 'webgl' ? 'the graphics card (WebGL)' : 'the processor (' + tf.getBackend() + ')'}.`);
+    return DET.model;
+  })().catch(e => { DET.loading = null; throw e; });
+  return DET.loading;
+}
+function detStop() {
+  DET.running = false; DET.gen++;
+  if (DET.raf) cancelAnimationFrame(DET.raf); DET.raf = 0;
+  const v = $('detVideo'); if (v) { try { v.pause(); } catch (e) { } }
+  if (DET.stream) { DET.stream.getTracks().forEach(t => t.stop()); DET.stream = null; if (v) v.srcObject = null; }
+  renderDetectControls();
+}
+async function detStart(kind, file) {
+  detStop();
+  const gen = DET.gen;
+  DET.kind = kind; DET.img = null; DET.lastCounts = null;
+  if (DET.url) { URL.revokeObjectURL(DET.url); DET.url = null; }
+  $('detEmpty').hidden = true;
+  try { await detLoadModel(); } catch (e) { detSetStatus('The detector could not load here (' + e.message + '). Check the connection and try again.', true); return; }
+  if (gen !== DET.gen) return;
+  const v = $('detVideo');
+  try {
+    if (kind === 'camera') {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no camera API');
+      DET.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
+      v.srcObject = DET.stream; v.loop = false;
+    } else if (kind === 'file') {
+      DET.url = URL.createObjectURL(file);
+      if (file.type.startsWith('image/')) {
+        DET.img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('image could not be read')); im.src = DET.url; });
+        DET.fileName = file.name;
+      } else { v.srcObject = null; v.src = DET.url; v.loop = true; DET.fileName = file.name; }
+    } else {
+      v.srcObject = null; v.src = detSampleSrc(kind); v.loop = true;
+    }
+    if (!DET.img) { v.muted = true; v.playsInline = true; await v.play(); }
+  } catch (e) {
+    if (kind === 'camera') detSetStatus('The camera is not available here: this viewer blocks it or permission was refused. Open the hosted page on a phone or laptop, or upload a video instead.', true);
+    else detSetStatus('Could not open this source (' + e.message + ').', true);
+    $('detEmpty').hidden = false; renderDetectControls(); return;
+  }
+  if (gen !== DET.gen) return;
+  DET.running = true; renderDetectControls();
+  detSetStatus(kind === 'camera' ? 'Camera on · detecting live. Nothing is recorded or uploaded.' : kind === 'file' ? `Analysing ${DET.fileName} on this device.` : `Replaying ${DET_SAMPLES[kind].label}.`);
+  detLoop(gen);
+}
+function iou(a, b) {
+  const x1 = Math.max(a[0], b[0]), y1 = Math.max(a[1], b[1]), x2 = Math.min(a[0] + a[2], b[0] + b[2]), y2 = Math.min(a[1] + a[3], b[1] + b[3]);
+  const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1); return inter / (a[2] * a[3] + b[2] * b[3] - inter || 1);
+}
+async function detRun(el, W, H) {
+  if (!DET.tiles) return DET.model.detect(el, 100, DET.minScore);
+  // small-person mode: 2x2 overlapping tiles, each upscaled, then merged
+  const cv = detRun.cv || (detRun.cv = document.createElement('canvas')), out = [], n = 2, ov = 0.15, tw = W / n, th = H / n;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const x0 = Math.max(0, j * tw - ov * tw), y0 = Math.max(0, i * th - ov * th), x1 = Math.min(W, (j + 1) * tw + ov * tw), y1 = Math.min(H, (i + 1) * th + ov * th);
+    const w = x1 - x0, h = y1 - y0, sc = 640 / Math.max(w, h);
+    cv.width = Math.round(w * sc); cv.height = Math.round(h * sc); cv.getContext('2d').drawImage(el, x0, y0, w, h, 0, 0, cv.width, cv.height);
+    (await DET.model.detect(cv, 100, DET.minScore)).forEach(o => out.push({ class: o.class, score: o.score, bbox: [x0 + o.bbox[0] / sc, y0 + o.bbox[1] / sc, o.bbox[2] / sc, o.bbox[3] / sc] }));
+  }
+  out.sort((a, b) => b.score - a.score);
+  const keep = [];
+  for (const o of out) if (!keep.some(k => k.class === o.class && iou(k.bbox, o.bbox) > 0.45)) keep.push(o);
+  return keep;
+}
+function detDraw(el, W, H, dets) {
+  const c = $('detCanvas'); if (!c) return;
+  const scale = Math.min(1, 960 / W), cw = Math.round(W * scale), ch = Math.round(H * scale);
+  if (c.width !== cw || c.height !== ch) { c.width = cw; c.height = ch; }
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = true; ctx.drawImage(el, 0, 0, cw, ch);
+  const lw = Math.max(2, cw / 360), fs = Math.max(11, Math.round(cw / 60));
+  if (DET.mask) {   // privacy mask: pixelate the head area of every detected person
+    const tmp = detDraw.tmp || (detDraw.tmp = document.createElement('canvas')), tctx = tmp.getContext('2d');
+    dets.filter(d => d.class === 'person').forEach(d => {
+      const [bx, y, bw, h] = d.bbox.map(v => v * scale);
+      const w = Math.max(6, Math.min(bw * 0.7, h * 0.3)), x = bx + (bw - w) / 2, hh = Math.max(6, Math.min(h * 0.24, w * 1.3));   // head-sized area
+      const sw = Math.max(1, Math.round(w / 6)), sh = Math.max(1, Math.round(hh / 6));
+      tmp.width = sw; tmp.height = sh; tctx.drawImage(c, x, y, w, hh, 0, 0, sw, sh);
+      ctx.imageSmoothingEnabled = false; ctx.drawImage(tmp, 0, 0, sw, sh, x, y, w, hh); ctx.imageSmoothingEnabled = true;
+    });
+  }
+  ctx.font = `700 ${fs}px "Plus Jakarta Sans", system-ui, sans-serif`; ctx.textBaseline = 'top';
+  dets.forEach(d => {
+    const [x, y, w, h] = d.bbox.map(v => v * scale);
+    const col = d.class === 'person' ? '#22C55E' : VEHICLE_CLASSES.has(d.class) ? '#3B82F6' : '#F59E0B';
+    ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.strokeRect(x, y, w, h);
+    const tag = `${d.class.toUpperCase()} ${Math.round(d.score * 100)}%`, tw = ctx.measureText(tag).width + 10, th = fs + 8;
+    const ty = y - th >= 0 ? y - th : y;
+    ctx.fillStyle = col; ctx.fillRect(x - lw / 2, ty, tw, th);
+    ctx.fillStyle = '#0B0F0C'; ctx.fillText(tag, x + 5 - lw / 2, ty + 4);
+  });
+}
+async function detLoop(gen) {
+  if (!DET.running || gen !== DET.gen) return;
+  const v = $('detVideo'), el = DET.img || v;
+  const W = DET.img ? DET.img.naturalWidth : v.videoWidth, H = DET.img ? DET.img.naturalHeight : v.videoHeight;
+  if (!W || !H || (!DET.img && v.readyState < 2)) { DET.raf = requestAnimationFrame(() => detLoop(gen)); return; }
+  const t0 = performance.now();
+  let dets = [];
+  try { dets = await detRun(el, W, H); } catch (e) { detSetStatus('Detection stopped: ' + e.message, true); detStop(); return; }
+  // drop implausible boxes: covering over half the frame with low confidence (a common SSD false positive)
+  dets = dets.filter(d => !(d.bbox[2] * d.bbox[3] > 0.5 * W * H && d.score < 0.6));
+  if (gen !== DET.gen) return;
+  detDraw(el, W, H, dets);
+  const dt = performance.now() - t0; DET.fps = DET.fps ? DET.fps * 0.8 + (1000 / dt) * 0.2 : 1000 / dt;
+  const people = dets.filter(d => d.class === 'person').length, vehicles = dets.filter(d => VEHICLE_CLASSES.has(d.class)).length;
+  DET.lastCounts = { people, vehicles, other_objects: dets.length - people - vehicles };
+  DET.lastDets = dets;
+  renderDetectStats();
+  if (DET.img) { DET.running = false; renderDetectControls(); detSetStatus(`Analysed ${DET.fileName}: ${people} people, ${vehicles} vehicles.`); return; }
+  DET.raf = requestAnimationFrame(() => detLoop(gen));
+}
+function renderDetectStats() {
+  const c = DET.lastCounts, el = $('detStats'); if (!el) return;
+  let truth = '';
+  const smp = DET_SAMPLES[DET.kind];
+  if (smp && c) {
+    const sec = Math.floor(($('detVideo').currentTime || 0)), R = HAJJ[smp.clip].readings, r = R[Math.min(sec, R.length - 1)];
+    truth = `<div class="tile"><div class="eyebrow">Human-verified count · second ${r.t}</div><div class="v">${n0(r.count)}</div><div class="sub">HAJJv2-CrowdCount ${esc(smp.clip)} · detector found ${c.people} (${pct(c.people / r.count)})</div>${srcChip('real')}</div>`;
+  }
+  el.innerHTML = c ? `
+    <div class="tile"><div class="eyebrow">People detected</div><div class="v" style="color:#16A34A">${c.people}</div><div class="sub">this frame</div></div>
+    <div class="tile"><div class="eyebrow">Vehicles detected</div><div class="v" style="color:#2563EB">${c.vehicles}</div><div class="sub">cars, buses, trucks, bikes</div></div>
+    <div class="tile"><div class="eyebrow">Other objects</div><div class="v">${c.other_objects}</div><div class="sub">bags, umbrellas and more</div></div>
+    <div class="tile"><div class="eyebrow">Speed</div><div class="v">${DET.img ? '–' : DET.fps.toFixed(1)}<small>${DET.img ? '' : ' fps'}</small></div><div class="sub">frames analysed per second</div></div>${truth}` : '';
+}
+function renderDetectControls() {
+  document.querySelectorAll('[data-det]').forEach(b => {
+    const k = b.dataset.det;
+    if (DET_SAMPLES[k] || k === 'camera') b.setAttribute('aria-pressed', String(DET.running && DET.kind === k));
+    if (k === 'mask') { b.setAttribute('aria-pressed', String(DET.mask)); b.textContent = DET.mask ? 'Privacy mask: on' : 'Privacy mask: off'; }
+    if (k === 'tiles') { b.setAttribute('aria-pressed', String(DET.tiles)); b.textContent = DET.tiles ? 'Small-person mode: on' : 'Small-person mode: off'; }
+    if (k === 'stop') b.disabled = !DET.running;
+  });
+  const sc = $('detScore'), sv = $('detScoreVal'); if (sc) sc.value = DET.minScore; if (sv) sv.textContent = Math.round(DET.minScore * 100) + '%';
+}
+function renderDetect() {
+  const st = $('detStatus'); if (st) { st.textContent = DET.status; st.classList.toggle('err', !!DET.err); }
+  renderDetectControls(); renderDetectStats();
+}
+function detAction(kind) {
+  if (kind === 'stop') { detStop(); detSetStatus('Stopped.'); return; }
+  if (kind === 'mask') { DET.mask = !DET.mask; renderDetectControls(); if (DET.img && DET.lastDets) detDraw(DET.img, DET.img.naturalWidth, DET.img.naturalHeight, DET.lastDets); return; }
+  if (kind === 'tiles') { DET.tiles = !DET.tiles; renderDetectControls(); if (DET.img) detStart('file', $('detFile').files[0]); return; }
+  detStart(kind);
+}
+on(document, 'change', e => {
+  if (e.target.id === 'detFile' && e.target.files && e.target.files[0]) detStart('file', e.target.files[0]);
+});
+on(document, 'input', e => {
+  if (e.target.id === 'detScore') { DET.minScore = +e.target.value; $('detScoreVal').textContent = Math.round(DET.minScore * 100) + '%'; if (DET.img && DET.model) detStart('file', $('detFile').files[0]); }
+});
 
 /* ---------------- boot ---------------- */
 buildNav(); applyEdits();
@@ -1570,12 +1848,12 @@ const bootMsg = $('bootMsg'); if (bootMsg) bootMsg.hidden = true;
 window.__miqaatTeardown = () => {
   LISTENERS.forEach(([t, type, fn]) => t.removeEventListener(type, fn));
   clearInterval(playing); if (demo) clearInterval(demo.timer);
-  if (twin.raf) cancelAnimationFrame(twin.raf); clearTimeout(toast.t);
+  if (twin.raf) cancelAnimationFrame(twin.raf); clearTimeout(toast.t); detStop();
 };
 // Read-only handle used by the automated QA script
 window.__miqaat = {
   get live() { return live; }, get CFG() { return CFG; }, get page() { return page; }, get demo() { return demo; }, get horizonResult() { return horizonResult; },
-  PAGES, go, project, counterfactual, computeRisk, compareInterventions, levelOf
+  PAGES, go, project, counterfactual, computeRisk, compareInterventions, levelOf, horizonExperiment, HAJJ, SCENARIOS, get det() { return DET; }
 };
 
 })();
